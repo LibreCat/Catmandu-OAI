@@ -16,10 +16,14 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl' => '5.10.0',
-        'Catmandu' => '0.1',
+        'Catmandu' => '0.01',
         'Moo' => '0.009011',
         'Net::OAI::Harvester' => '1.13',
     },
+    add_to_cleanup => [qw(
+        Catmandu-OAI-*
+    )],
+    create_makefile_pl => 'traditional',
     create_license => 1,
 );
 
