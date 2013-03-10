@@ -1,16 +1,16 @@
 package Catmandu::Importer::OAI::DC;
 use Moo;
 
-has dom => (is => 'ro');
+has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
 
 sub parse {
-    my ($self) = @_;
+    my ($self,$dom) = @_;
     
-    return undef unless $self->dom;
+    return undef unless defined $dom;
     
     my $rec = {};
     
-    for ($self->dom->findnodes("./*")) {
+    for ($dom->findnodes("./*")) {
         my $name  = $_->localName;
         my $value = $_->textContent;
         push(@{$rec->{$name}}, $value);
@@ -30,7 +30,7 @@ with 'Catmandu::Importer';
 
 has url     => (is => 'ro', required => 1);
 has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
-has handler => (is => 'ro' , default => sub { "Catmandu::Importer::OAI::DC"} );
+has handler => (is => 'ro', default => sub { Catmandu::Importer::OAI::DC->new });
 has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
@@ -56,8 +56,11 @@ sub _map_record {
         push(@$about , $_->dom->nonBlankChildNodes->[0]->nonBlankChildNodes->[0]->toString);
     }
     
-    my $handler = Catmandu::Importer::OAI::DC->new(dom => $dom);
-    my $values  = $handler->parse // {};
+    my $values  = {};
+    
+    if (defined $self->handler && $self->metadataPrefix eq $self->handler->metadataPrefix) {
+        $values  = $self->handler->parse($dom) // {};
+    }
 
     my $data = { 
         _id => $identifier ,
@@ -107,7 +110,8 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
                     metadataPrefix => "..." , 
                     from => "..." , 
                     until => "..." , 
-                    set => "..." );
+                    set => "...",
+                    handler => "..." );
 
     my $n = $importer->each(sub {
         my $hashref = $_[0];
@@ -116,11 +120,29 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
 =head1 METHODS
 
-=head2 new(url => URL,[set => [qw(...)])
+=head2 new(url => URL, %options)
 
-Create a new OAI-PMH importer for the URL. Optionally provide a set parameter with the
-OAI-PMH set you want to import.
+Create a new OAI-PMH importer for the URL. Optionally provide OAI-PMH parameters:
+metadataPrefix, from, until and set. To parse metadata records into Perl hashes optionally
+a handler can be provided. This is a Perl package that implements two methods:
 
+  * metadataPrefix  - which should return a metadataPrefix string for which it can parse
+  the metadata
+  * parse($dom) - which recieves a XML::LibXML::DOM object and should return a Perl hash
+  
+E.g.
+
+  package MyHandler;
+  
+  use Moo;
+  
+  has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
+
+  sub parse {
+      my ($self,$dom) = @_;
+      return {};
+  }
+  
 =head2 count
 
 =head2 each(&callback)

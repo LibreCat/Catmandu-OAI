@@ -24,6 +24,10 @@ our $VERSION = '0.01';
 
 Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
 
+=head1 CONTRIBUTOR
+
+Patrick Hochstenbach C<< <patrick.hochstenbach at ugent.be> >>
+
 =head1 LICENSE AND COPYRIGHT
 
 Copyright 2012 Ghent University Library
