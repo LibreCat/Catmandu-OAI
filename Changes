@@ -1,5 +1,10 @@
 Revision history for Catmandu-OAI
 
+0.02    2013-03-11
+  - pluggable record handlers
+  - support set, metadataPrefix, from, until
+  - more tolerant of bad xml
+
 0.01    2012-05-04
   - initial release
 

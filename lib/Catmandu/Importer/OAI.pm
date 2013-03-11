@@ -5,17 +5,17 @@ has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
 
 sub parse {
     my ($self,$dom) = @_;
-    
+
     return undef unless defined $dom;
-    
+
     my $rec = {};
-    
+
     for ($dom->findnodes("./*")) {
         my $name  = $_->localName;
         my $value = $_->textContent;
         push(@{$rec->{$name}}, $value);
     }
-    
+
     $rec;
 }
 
@@ -43,26 +43,26 @@ sub _build_oai {
 
 sub _map_record {
     my ($self, $rec) = @_;
-    
+
     my $sets       = [ $rec->header->setSpec ];
     my $identifier = $rec->identifier;
     my $datestamp  = $rec->datestamp;
-    my $status     = $rec->status // ""; 
+    my $status     = $rec->status // "";
     my $dom        = $rec->metadata ? $rec->metadata->dom->nonBlankChildNodes->[0]->nonBlankChildNodes->[0] : undef;
     my $metadata   = $dom ? $dom->toString : "";
     my $about      = [];
-    
+
     for ($rec->about) {
         push(@$about , $_->dom->nonBlankChildNodes->[0]->nonBlankChildNodes->[0]->toString);
     }
-    
+
     my $values  = {};
-    
+
     if (defined $self->handler && $self->metadataPrefix eq $self->handler->metadataPrefix) {
         $values  = $self->handler->parse($dom) // {};
     }
 
-    my $data = { 
+    my $data = {
         _id => $identifier ,
         _identifier => $identifier ,
         _datestamp  => $datestamp ,
@@ -72,7 +72,7 @@ sub _map_record {
         _about      => $about ,
         %$values
     };
-        
+
     $data;
 }
 
@@ -80,12 +80,12 @@ sub generator {
     my ($self) = @_;
     sub {
         state $res = $self->oai->ListRecords(
-                                metadataPrefix => $self->metadataPrefix, 
-                                set => $self->set , 
-                                from => $self->from , 
+                                metadataPrefix => $self->metadataPrefix,
+                                set => $self->set ,
+                                from => $self->from ,
                                 until => $self->until ,
                     );
-        
+
         if ($res->is_error) {
             warn $res->message;
             return;
@@ -106,10 +106,10 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
     use Catmandu::Importer::OAI;
 
     my $importer = Catmandu::Importer::OAI->new(
-                    url => "...", 
-                    metadataPrefix => "..." , 
-                    from => "..." , 
-                    until => "..." , 
+                    url => "...",
+                    metadataPrefix => "..." ,
+                    from => "..." ,
+                    until => "..." ,
                     set => "...",
                     handler => "..." );
 
@@ -129,20 +129,20 @@ a handler can be provided. This is a Perl package that implements two methods:
   * metadataPrefix  - which should return a metadataPrefix string for which it can parse
   the metadata
   * parse($dom) - which recieves a XML::LibXML::DOM object and should return a Perl hash
-  
+
 E.g.
 
   package MyHandler;
-  
+
   use Moo;
-  
+
   has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
 
   sub parse {
       my ($self,$dom) = @_;
       return {};
   }
-  
+
 =head2 count
 
 =head2 each(&callback)
