@@ -18,7 +18,7 @@ my $builder = Module::Build->new(
         'perl' => '5.10.0',
         'Catmandu' => '0.01',
         'Moo' => '0.009011',
-        'Net::OAI::Harvester' => '1.13',
+        'HTTP::OAI' => '3.28',
     },
     add_to_cleanup => [qw(
         Catmandu-OAI-*
