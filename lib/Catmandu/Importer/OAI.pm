@@ -37,7 +37,8 @@ has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
 has oai     => (is => 'ro', lazy => 1, builder => '_build_oai');
-has dry     => ( is => 'ro' );
+has dry     => (is => 'ro');
+has listIdentifiers => (is => 'ro');
 
 sub _build_oai {
     my ($self) = @_;
@@ -104,16 +105,29 @@ sub generator {
         $called = 1;
         # TODO: make sure that HTTP::OAI does not change this internal method
         return { 
-            url => $self->oai->_buildurl( $self->_args, verb => 'ListIdentifiers' )
+            url => $self->oai->_buildurl( 
+                $self->_args, 
+                verb => ($self->listIdentifiers ? 'ListIdentifiers' : 'ListRecords')
+            )
         };
     } : sub {
-        state $res = $self->oai->ListRecords( $self->_args );
+        state $res = ($self->listIdentifiers
+            ? $self->oai->ListIdentifiers( $self->_args )
+            : $self->oai->ListRecords( $self->_args ));
         if ($res->is_error) {
             warn $res->message;
             return;
         }
         if (my $rec = $res->next) {
-            return $self->_map_record($rec);
+            if ($rec->isa('HTTP::OAI::Record')) {
+                return $self->_map_record($rec);
+            } else {
+                return {
+                    _id => $rec->identifier,
+                    _datestamp  => $rec->datestamp,
+                    _status => $rec->status // "",
+                }
+            }
         }
         return;
     };
@@ -155,6 +169,10 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 =item from
 
 =item until
+
+=item listIdentifiers
+
+Harvest identifiers instead of full records.
 
 =item dry
 
