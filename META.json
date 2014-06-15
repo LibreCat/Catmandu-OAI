@@ -37,7 +37,7 @@
       "runtime" : {
          "requires" : {
             "Catmandu" : "0.9202",
-            "HTTP::OAI" : "3.28",
+            "HTTP::OAI" : "4.03",
             "Moo" : "1.0",
             "perl" : "v5.10.1"
          }
