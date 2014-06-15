@@ -1,6 +1,6 @@
 Revision history for Catmandu-OAI
 
-0.0?    2014-??-??
+{{NEXT}}
   - new option: dry (as supported my Catmandu::Importer::getJSON)
   - new option: listIdentifiers
 

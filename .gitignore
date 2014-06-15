@@ -1,13 +1,3 @@
-!.gitignore
-.DS_Store
-*.swp
-.build
-_build
-blib
-Build
-LICENSE
-Makefile.PL
-MANIFEST*
-META.*
-MYMETA.*
 Catmandu-OAI-*
+/.build
+!META.json
