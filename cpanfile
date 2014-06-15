@@ -7,5 +7,5 @@ on 'test', sub {
 };
 
 requires 'Catmandu', '0.9202';
-requires 'HTTP::OAI', '3.28';
+requires 'HTTP::OAI', '4.03';
 requires 'Moo', '1.0';
