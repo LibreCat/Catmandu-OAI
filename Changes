@@ -1,6 +1,8 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+
+0.04  2014-06-15 20:30:07 CEST
   - switched to the new HTTP::OAI with callbacks
   - adding a network test
   
