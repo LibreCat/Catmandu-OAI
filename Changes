@@ -1,5 +1,9 @@
 Revision history for Catmandu-OAI
 
+{{NEXT}}
+  - new option: dry (as supported my Catmandu::Importer::getJSON)
+  - new option: listIdentifiers
+
 0.02    2013-03-11
   - pluggable record handlers
   - support set, metadataPrefix, from, until

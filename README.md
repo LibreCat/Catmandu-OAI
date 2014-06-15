@@ -1,32 +1,22 @@
-package Catmandu::OAI;
-
-=head1 NAME
+# NAME
 
 Catmandu::OAI - Catmandu modules for working with OAI repositories
 
-=cut
+# MODULES
 
-our $VERSION = '0.02';
+- [Catmandu::Importer::OAI](https://metacpan.org/pod/Catmandu::Importer::OAI)
 
-=head1 MODULES
+# AUTHOR
 
-=over
+Nicolas Steenlant, `<nicolas.steenlant at ugent.be>`
 
-=item * L<Catmandu::Importer::OAI>
+# CONTRIBUTOR
 
-=back
+Patrick Hochstenbach, `<patrick.hochstenbach at ugent.be>`
 
-=head1 AUTHOR
+Jakob Voss, `nichtich at cpan.org`
 
-Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
-
-=head1 CONTRIBUTOR
-
-Patrick Hochstenbach, C<< <patrick.hochstenbach at ugent.be> >>
-
-Jakob Voss, C<< nichtich at cpan.org >>
-
-=head1 LICENSE AND COPYRIGHT
+# LICENSE AND COPYRIGHT
 
 Copyright 2012 Ghent University Library
 
@@ -35,8 +25,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
-
-=cut
-
-1;
-

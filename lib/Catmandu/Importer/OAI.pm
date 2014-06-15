@@ -37,6 +37,8 @@ has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
 has oai     => (is => 'ro', lazy => 1, builder => '_build_oai');
+has dry     => (is => 'ro');
+has listIdentifiers => (is => 'ro');
 
 sub _build_oai {
     my ($self) = @_;
@@ -78,22 +80,54 @@ sub _map_record {
     $data;
 }
 
+sub _args {
+    my ($self) = @_;
+    
+    my %args = (
+        metadataPrefix => $self->metadataPrefix,
+        set => $self->set ,
+        from => $self->from ,
+        until => $self->until ,
+    );
+    for( keys %args ) {
+        delete $args{$_} if !defined($args{$_}) || !length($args{$_});
+    } 
+
+    return %args;
+}
+
 sub generator {
     my ($self) = @_;
+    return $self->dry ?
     sub {
-        state $res = $self->oai->ListRecords(
-                                metadataPrefix => $self->metadataPrefix,
-                                set => $self->set ,
-                                from => $self->from ,
-                                until => $self->until ,
-                    );
-
+        state $called = 0;
+        return if $called;
+        $called = 1;
+        # TODO: make sure that HTTP::OAI does not change this internal method
+        return { 
+            url => $self->oai->_buildurl( 
+                $self->_args, 
+                verb => ($self->listIdentifiers ? 'ListIdentifiers' : 'ListRecords')
+            )
+        };
+    } : sub {
+        state $res = ($self->listIdentifiers
+            ? $self->oai->ListIdentifiers( $self->_args )
+            : $self->oai->ListRecords( $self->_args ));
         if ($res->is_error) {
             warn $res->message;
             return;
         }
         if (my $rec = $res->next) {
-            return $self->_map_record($rec);
+            if ($rec->isa('HTTP::OAI::Record')) {
+                return $self->_map_record($rec);
+            } else {
+                return {
+                    _id => $rec->identifier,
+                    _datestamp  => $rec->datestamp,
+                    _status => $rec->status // "",
+                }
+            }
         }
         return;
     };
@@ -120,12 +154,39 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
         # ...
     });
 
-=head1 METHODS
+=head1 CONFIGURATION
 
-=head2 new(url => URL, %options)
+=over
 
-Create a new OAI-PMH importer for the URL. Optionally provide OAI-PMH parameters:
-metadataPrefix, from, until and set. To parse metadata records into Perl hashes optionally
+=item url
+
+=item metadataPrefix
+
+=item handler
+
+=item set
+
+=item from
+
+=item until
+
+=item listIdentifiers
+
+Harvest identifiers instead of full records.
+
+=item dry
+
+Don't do any HTTP requests but return URLs that data would be queried from. 
+
+=back
+
+=head1 DESCRIPTION
+
+Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
+inherited. The Catmandu::Importer::OAI methods are not idempotent: OAI-PMH
+feeds can only be read once.
+
+To parse metadata records into Perl hashes optionally
 a handler can be provided. This is a Perl package that implements two methods:
 
   * metadataPrefix  - which should return a metadataPrefix string for which it can parse
@@ -144,19 +205,6 @@ E.g.
       my ($self,$dom) = @_;
       return {};
   }
-
-=head2 count
-
-=head2 each(&callback)
-
-=head2 ...
-
-Every Catmandu::Importer is a Catmandu::Iterable all its methods are inherited. The
-Catmandu::Importer::OAI methods are not idempotent: OAI-PMH feeds can only be read once.
-
-=head1 SEE ALSO
-
-L<Catmandu::Iterable>
 
 =cut
 
