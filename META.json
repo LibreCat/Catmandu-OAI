@@ -62,7 +62,7 @@
          "web" : "https://github.com/LibreCat/Catmandu-OAI"
       }
    },
-   "version" : "0.02",
+   "version" : "0.03",
    "x_contributors" : [
       "Jakob Voss <voss@gbv.de>",
       "Nicolas Steenlant <nicolas.steenlant@ugent.be>"
