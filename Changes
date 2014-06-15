@@ -1,9 +1,12 @@
 Revision history for Catmandu-OAI
 
-{{NEXT}}
+{{$NEXT}}
+
+0.03  2014-06-15 10:22:55 CEST
   - new option: dry (as supported my Catmandu::Importer::getJSON)
   - new option: listIdentifiers
   - changed packaging to Dist::Milla
+  - adding more pod
 
 0.02    2013-03-11
   - pluggable record handlers
