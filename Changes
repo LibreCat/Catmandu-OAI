@@ -1,7 +1,9 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
-
+  - switched to the new HTTP::OAI with callbacks
+  - adding a network test
+  
 0.03  2014-06-15 10:22:55 CEST
   - new option: dry (as supported my Catmandu::Importer::getJSON)
   - new option: listIdentifiers

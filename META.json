@@ -4,7 +4,7 @@
       "Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Milla version v1.0.5, Dist::Zilla version 5.016, CPAN::Meta::Converter version 2.132830",
+   "generated_by" : "Dist::Milla version v1.0.5, Dist::Zilla version 5.019, CPAN::Meta::Converter version 2.141520",
    "license" : [
       "perl_5"
    ],
@@ -36,8 +36,9 @@
       },
       "runtime" : {
          "requires" : {
-            "Catmandu" : "0.9202",
+            "Catmandu" : "0.9204",
             "HTTP::OAI" : "4.03",
+            "IO::Socket::SSL" : "1.993",
             "Moo" : "1.0",
             "perl" : "v5.10.1"
          }
@@ -62,7 +63,7 @@
          "web" : "https://github.com/LibreCat/Catmandu-OAI"
       }
    },
-   "version" : "0.03",
+   "version" : "0.04",
    "x_contributors" : [
       "Jakob Voss <voss@gbv.de>",
       "Nicolas Steenlant <nicolas.steenlant@ugent.be>"

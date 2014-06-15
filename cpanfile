@@ -6,6 +6,9 @@ on 'test', sub {
   requires 'Test::Exception','0.32';
 };
 
-requires 'Catmandu', '0.9202';
+requires 'Catmandu', '0.9204';
 requires 'HTTP::OAI', '4.03';
 requires 'Moo', '1.0';
+
+# Need recent SSL to talk to https endpoint correctly
+requires 'IO::Socket::SSL', '1.993';
