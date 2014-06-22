@@ -24,9 +24,9 @@ sub parse {
         }
         elsif ( $name eq 'datafield' ) {
             my $tag  = $field->getAttribute( 'tag' );
-             my $ind1 = $field->getAttribute( 'ind1' ) // ' ';
-              my $ind2 = $field->getAttribute( 'ind2' ) // ' ';
-               my @subfield = ();
+            my $ind1 = $field->getAttribute( 'ind1' ) // ' ';
+            my $ind2 = $field->getAttribute( 'ind2' ) // ' ';
+            my @subfield = ();
             for my $subfield ( $field->getChildrenByLocalName('subfield') ) {
                   my $code = $subfield->getAttribute( 'code' );
                   my $value = $subfield->textContent;
