@@ -8,12 +8,16 @@ use Test::More;
 use TestParser;
 use Data::Dumper;
 
+my $handler = TestParser->new;
+
+ok $handler;
+
 if ($ENV{RELEASE_TESTING}) {
 	my $importer = Catmandu::Importer::OAI->new(
 	    url => 'http://search.ugent.be/meercat/x/oai',
 	    metadataPrefix => 'marcxml',
 	    set => "eu",
-	    handler => TestParser->new,
+	    handler => $handler,
 	);
 
 	my $record = $importer->first;

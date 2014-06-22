@@ -3,8 +3,6 @@ package Catmandu::Importer::OAI::DC;
 use Catmandu::Sane;
 use Moo;
 
-has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
-
 sub parse {
     my ($self,$dom) = @_;
 

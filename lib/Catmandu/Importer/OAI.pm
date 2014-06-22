@@ -1,18 +1,17 @@
 package Catmandu::Importer::OAI;
 
 use Catmandu::Sane;
-use Catmandu::Importer::OAI::DC;
+use Catmandu::Util qw(:is);
 use Moo;
 use Scalar::Util qw(blessed);
 use HTTP::OAI;
 use Data::Dumper;
-use XML::Struct qw(readXML);
 
 with 'Catmandu::Importer';
 
 has url     => (is => 'ro', required => 1);
 has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
-has handler => (is => 'ro', lazy => 1, builder => 1);
+has handler => (is => 'rw', lazy => 1 , builder => 1, coerce => \&_coerce_handler );
 has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
@@ -23,10 +22,33 @@ has listIdentifiers => (is => 'ro');
 sub _build_handler {
     my ($self) = @_;
     if ($self->metadataPrefix eq 'oai_dc') {
-        return Catmandu::Importer::OAI::DC->new;
+        return 'DC';
     } else {
-        return sub { return { _metadata => readXML($_[0]) } };
+        return 'Struct';
     }
+}
+
+sub _coerce_handler {
+  my ($handler) = @_;
+
+  return $handler if is_invocant($handler) or is_code_ref($handler);
+
+  if (is_string($handler) && !is_number($handler)) {
+      my $class = $handler =~ /^\+(.+)/ ? $1
+        : "Catmandu::Importer::OAI::$handler";
+
+      my $handler;
+      eval {
+          $handler = Catmandu::Util::require_package($class)->new;
+      };
+      if ($@) {
+        croak $@;
+      } else {
+        return $handler;
+      }
+  }
+
+  return sub { return { _metadata => readXML($_[0]) } };
 }
 
 sub _build_oai {
@@ -167,6 +189,12 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
 =head1 SYNOPSIS
 
+    # From the command line
+    $ catmandu convert OAI --url http://myrepo.org/oai
+
+    $ catmandu convert OAI --url http://myrepo.org/oai --metadataPrefix didl --handler RAW
+
+    # In perl
     use Catmandu::Importer::OAI;
 
     my $importer = Catmandu::Importer::OAI->new(
@@ -184,19 +212,29 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
 =head1 CONFIGURATION
 
-=over
+=over 4
 
 =item url
 
 =item metadataPrefix
 
-=item handler
+=item handler(sub {})
 
-To parse metadata records into Perl hashes optionally a handler can be
-provided. This is a code reference or an object with a method named C<parse>.
-The code or method recieves a L<XML::LibXML::DOM> object and should return a
-Perl hash. By default, L<XML::Struct> is used to transform the XML fragment
-into record field C<_metadata>.
+=item handler(My::Handler->new)
+
+=item handler('NAME' | '+NAME')
+
+To parse metadata records optionally a handler can be
+provided which transforms a DOM object into a Perl hash.
+
+Handlers can be provided as function reference, an instance of a Perl 
+package that implements 'parse', or by a package NAME. Package names should
+be prepended by C<+> or prefixed with C<Catmandu::Importer::OAI::>. E.g
+C<foobar> will create a C<Catmandu::Importer::OAI::foobar> instance.
+
+Be default, L<Catmandu::Importer::OAI::DC> is used for C<oai_dc> type of
+responses. For all other responses, L<XML::Struct> is used to transform the 
+XML fragment into record field C<_metadata>.
 
 =item set
 
