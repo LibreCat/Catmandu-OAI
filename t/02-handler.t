@@ -25,6 +25,37 @@ if ($ENV{RELEASE_TESTING}) {
 	ok $record , 'listrecords';
 
 	is $record->{test}, 'ok' , 'got correct data';
+
+    #---
+
+	$importer = Catmandu::Importer::OAI->new(
+	    url => 'http://search.ugent.be/meercat/x/oai',
+	    metadataPrefix => 'marcxml',
+	    set => "eu",
+	    handler => '+TestParser',
+	);
+
+	$record = $importer->first;
+
+	ok $record , 'listrecords';
+
+	is $record->{test}, 'ok' , 'got correct data';
+
+    #---
+    $importer = Catmandu::Importer::OAI->new(
+	    url => 'http://search.ugent.be/meercat/x/oai',
+	    metadataPrefix => 'marcxml',
+	    set => "eu",
+	    handler => sub {
+	    	return { test => 123 };
+	    },
+	);
+
+	$record = $importer->first;
+
+	ok $record , 'listrecords';
+
+	is $record->{test}, '123' , 'got correct data';
 }
 
 done_testing;
