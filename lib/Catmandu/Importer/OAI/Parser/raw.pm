@@ -9,7 +9,7 @@ sub parse {
 
     return undef unless defined $dom;
 
-	{ _metadata => $dom->toString };
+    { _metadata => $dom->toString };
 }
 
 1;
