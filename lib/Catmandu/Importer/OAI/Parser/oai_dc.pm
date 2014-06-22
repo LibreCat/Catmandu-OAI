@@ -1,4 +1,4 @@
-package Catmandu::Importer::OAI::DC;
+package Catmandu::Importer::OAI::Parser::oai_dc;
 
 use Catmandu::Sane;
 use Moo;
