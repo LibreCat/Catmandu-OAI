@@ -9,7 +9,7 @@ sub parse {
 
     return undef unless defined $dom;
 
-	{ _metadata => readXML($dom) };
+    { _metadata => readXML($dom) };
 }
 
 1;
