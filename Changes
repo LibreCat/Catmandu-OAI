@@ -1,7 +1,9 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
-
+  - Refactoring the handler code into Parsers, more in line with Catmandu::SRU
+  - Adding marcxml parser
+  
 0.05  2014-06-22 09:34:00 CEST
   - Adding support for default XML::Struct parsing
   - Adding support for passing handlers by name and by invocation

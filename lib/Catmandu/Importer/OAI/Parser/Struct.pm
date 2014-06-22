@@ -1,4 +1,4 @@
-package Catmandu::Importer::OAI::Parser::stuct;
+package Catmandu::Importer::OAI::Parser::struct;
 
 use Catmandu::Sane;
 use Moo;
