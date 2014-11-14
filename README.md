@@ -29,9 +29,13 @@ Nicolas Steenlant, `<nicolas.steenlant at ugent.be>`
 
 # CONTRIBUTOR
 
-Patrick Hochstenbach, `<patrick.hochstenbach at ugent.be>`
+- Patrick Hochstenbach, `<patrick.hochstenbach at ugent.be>`
+- Jakob Voss, `<nichtich at cpan.org>`
 
-Jakob Voss, `<nichtich at cpan.org>`
+# MAINTAINER
+
+- Patrick Hochstenbach, `<patrick.hochstenbach at ugent.be>`
+- Christian Pietsch `<cpietsch+librecat at uni-bielefeld.de>`
 
 # LICENSE AND COPYRIGHT
 
