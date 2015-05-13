@@ -13,6 +13,7 @@ with 'Catmandu::Importer';
 has url     => (is => 'ro', required => 1);
 has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
 has handler => (is => 'rw', lazy => 1 , builder => 1, coerce => \&_coerce_handler );
+has xslt    => (is => 'ro', coerce => \&_coerce_xslt );
 has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
@@ -56,6 +57,13 @@ sub _coerce_handler {
   return sub { return { _metadata => readXML($_[0]) } };
 }
 
+sub _coerce_xslt {
+  eval {
+    Catmandu::Util::require_package('Catmandu::XML::Transformer')
+      ->new( stylesheet => $_[0] )
+  } or croak $@;
+}
+
 sub _build_oai {
     my ($self) = @_;
     HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
@@ -75,12 +83,7 @@ sub _map_record {
         push(@$about , $_->dom->nonBlankChildNodes->[0]->nonBlankChildNodes->[0]->toString);
     }
 
-    my $values  = {};
-
-    if ($dom) {
-        $values = (blessed($self->handler)
-                ? $self->handler->parse($dom) : $self->handler->($dom)) // { };
-    }
+    my $values = $self->handle_dom($dom) // { };
 
     my $data = {
         _id => $identifier ,
@@ -110,6 +113,16 @@ sub _args {
     } 
 
     return %args;
+}
+
+sub handle_dom {
+    my ($self, $dom) = @_;
+    return unless $dom;
+
+    $dom = $self->xslt->transform($dom) if $self->xslt;
+    return blessed($self->handler)
+         ? $self->handler->parse($dom)
+         : $self->handler->($dom);
 }
 
 sub dry_run {
@@ -258,6 +271,11 @@ Harvest identifiers instead of full records.
 =item dry
 
 Don't do any HTTP requests but return URLs that data would be queried from. 
+
+=item xslt
+
+Preprocess XML records with XSLT script(s) given as comma separated list or
+array reference. Requires L<Catmandu::XML>.
 
 =back
 
