@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <epicur xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance#"
+        xmlns="urn:nbn:de:1111-2004033116"
         xsi:schemaLocation="urn:nbn:de:1111-2004033116 http://www.persistent-identifier.de/xepicur/version1.0/xepicur.xsd" >
   <administrative_data>
     <delivery>
