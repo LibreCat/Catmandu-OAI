@@ -16,7 +16,7 @@ my $dom = XML::LibXML->load_xml( location => 't/epicur.xml' );
 sub oai_xslt {
     Catmandu::Importer::OAI->new( 
         url => 'http://example.org/', xslt => 't/transform.xsl', @_
-    )->handle_dom($dom)
+    )->handle_record($dom)
 }
 
 is_deeply oai_xslt( handler => 'raw' ), {
