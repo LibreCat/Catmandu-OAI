@@ -2,3 +2,5 @@ Catmandu-OAI-*
 /.build
 !META.json
 LICENSE
+local
+cpanfile.snapshot
