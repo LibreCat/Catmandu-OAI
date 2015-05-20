@@ -13,3 +13,7 @@ requires 'XML::Struct', '0.18';
 
 # Need recent SSL to talk to https endpoint correctly
 requires 'IO::Socket::SSL', '1.993';
+
+feature 'xslt' => sub {
+    requires 'Catmandu::XML', '0.15';
+};

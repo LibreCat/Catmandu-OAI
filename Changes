@@ -1,6 +1,7 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+  - Adding XSLT preprocessing
 
 0.06  2014-06-22 11:10:24 CEST
   - Refactoring the handler code into Parsers, more in line with Catmandu::SRU

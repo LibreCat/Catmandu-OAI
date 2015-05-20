@@ -13,6 +13,7 @@ with 'Catmandu::Importer';
 has url     => (is => 'ro', required => 1);
 has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
 has handler => (is => 'rw', lazy => 1 , builder => 1, coerce => \&_coerce_handler );
+has xslt    => (is => 'ro', coerce => \&_coerce_xslt );
 has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
@@ -56,6 +57,13 @@ sub _coerce_handler {
   return sub { return { _metadata => readXML($_[0]) } };
 }
 
+sub _coerce_xslt {
+  eval {
+    Catmandu::Util::require_package('Catmandu::XML::Transformer')
+      ->new( stylesheet => $_[0] )
+  } or croak $@;
+}
+
 sub _build_oai {
     my ($self) = @_;
     HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
@@ -75,12 +83,7 @@ sub _map_record {
         push(@$about , $_->dom->nonBlankChildNodes->[0]->nonBlankChildNodes->[0]->toString);
     }
 
-    my $values  = {};
-
-    if ($dom) {
-        $values = (blessed($self->handler)
-                ? $self->handler->parse($dom) : $self->handler->($dom)) // { };
-    }
+    my $values = $self->handle_record($dom) // { };
 
     my $data = {
         _id => $identifier ,
@@ -110,6 +113,16 @@ sub _args {
     } 
 
     return %args;
+}
+
+sub handle_record {
+    my ($self, $dom) = @_;
+    return unless $dom;
+
+    $dom = $self->xslt->transform($dom) if $self->xslt;
+    return blessed($self->handler)
+         ? $self->handler->parse($dom)
+         : $self->handler->($dom);
 }
 
 sub dry_run {
@@ -188,6 +201,9 @@ sub generator {
     return $self->dry ? $self->dry_run : $self->oai_run;
 }
 
+1;
+__END__
+
 =head1 NAME
 
 Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
@@ -217,39 +233,45 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
 =head1 CONFIGURATION
 
-=over 4
+=over
 
 =item url
 
+OAI-PMH Base URL.
+
 =item metadataPrefix
 
-=item handler(sub {})
+Metadata prefix to specify the metadata format. Set to C<oai_dc> by default. 
 
-=item handler(My::Handler->new)
+=item handler( sub {} | $object | 'NAME' | '+NAME' )
 
-=item handler('NAME' | '+NAME')
-
-To parse metadata records optionally a handler can be
-provided which transforms a DOM object into a Perl hash.
+Handler to transform each record from XML DOM (L<XML::LibXML::Element>) into
+Perl hash.
 
 Handlers can be provided as function reference, an instance of a Perl 
 package that implements 'parse', or by a package NAME. Package names should
 be prepended by C<+> or prefixed with C<Catmandu::Importer::OAI::Parser>. E.g
 C<foobar> will create a C<Catmandu::Importer::OAI::Parser::foobar> instance.
 
-Supported handles:
-    oai_dc  : Catmandu::Importer::OAI::Parser::oai_dc
-    marcxml : Catmandu::Importer::OAI::Parser::marcxml
-    raw     : Catmandu::Importer::OAI::Parser::raw (dont parse return the xml as is)
-
-By all other responses, L<XML::Struct> is used to transform the  XML fragment into record 
-field C<_metadata>.
+By default the handler L<Catmandu::Importer::OAI::Parser::oai_dc> is used for
+metadataPrefix C<oai_dc>,  L<Catmandu::Importer::OAI::Parser::marcxml> for
+C<marcxml>, and L<Catmandu::Importer::OAI::Parser::struct> for other formats.
+In addition there is L<Catmandu::Importer::OAI::Parser::raw> to return the XML
+as it is.
 
 =item set
 
+An optional set for selective harvesting.
+
 =item from
 
+An optional datetime value (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ) as lower bound
+for datestamp-based selective harvesting.
+
 =item until
+
+An optional datetime value (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ) as upper bound
+for datestamp-based selective harvesting.
 
 =item listIdentifiers
 
@@ -259,6 +281,11 @@ Harvest identifiers instead of full records.
 
 Don't do any HTTP requests but return URLs that data would be queried from. 
 
+=item xslt
+
+Preprocess XML records with XSLT script(s) given as comma separated list or
+array reference. Requires L<Catmandu::XML>.
+
 =back
 
 =head1 DESCRIPTION
@@ -267,6 +294,14 @@ Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
 inherited. The Catmandu::Importer::OAI methods are not idempotent: OAI-PMH
 feeds can only be read once.
 
-=cut
+=head1 METHOD
 
-1;
+In addition to methods inherited from L<Catmandu::Iterable>, this module
+provides the following public methods:
+
+=head2 handle_record( $dom )
+
+Process an XML DOM as with xslt and handler as configured and return the
+result.
+
+=cut
