@@ -17,6 +17,7 @@ has xslt    => (is => 'ro', coerce => \&_coerce_xslt );
 has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
+has resumptionToken => (is => 'ro');
 has oai     => (is => 'ro', lazy => 1, builder => 1);
 has dry     => (is => 'ro');
 has listIdentifiers => (is => 'ro');
@@ -145,7 +146,7 @@ sub oai_run {
     my ($self) = @_;
     sub {
         state $stack = [];
-        state $resumptionToken = undef;
+        state $resumptionToken = $self->resumptionToken;
         state $done  = 0;
 
         my $fill_stack = sub {
@@ -167,7 +168,9 @@ sub oai_run {
                 : $self->oai->ListRecords( %args , onRecord => $fill_stack );
 
             if ($res->is_error) {
-                $self->log->error($res->message);
+                my $token = $resumptionToken // '';
+                $self->log->error("resumptionToken($token) : " . $res->message);
+                carp "resumptionToken($token) : " . $res->message;
                 return undef;
             }
 
@@ -276,6 +279,10 @@ for datestamp-based selective harvesting.
 =item listIdentifiers
 
 Harvest identifiers instead of full records.
+
+=item resumptionToken
+
+An optional resumptionToken to start harvesting from.
 
 =item dry
 

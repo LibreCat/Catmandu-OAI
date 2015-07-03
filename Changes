@@ -1,6 +1,7 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+  - Don't bundle the dist.ini in distribution
 
 0.07  2015-05-20 16:15:02 CEST
   - Adding XSLT preprocessing
