@@ -177,6 +177,9 @@ sub oai_run {
             if (defined $res->resumptionToken) {
                 $resumptionToken = $res->resumptionToken->resumptionToken;
             }
+            else {
+                $resumptionToken = undef;
+            }
            
             unless (defined $resumptionToken && length $resumptionToken) {
                 $done = 1;

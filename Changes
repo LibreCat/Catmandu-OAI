@@ -1,7 +1,8 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
-
+  - Fixing repeated last page bug #10
+  
 0.08  2015-07-03 11:31:26 CEST
   - Don't bundle the dist.ini in distribution
   - Adding resumpionToken option
