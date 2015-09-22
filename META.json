@@ -49,9 +49,11 @@
       },
       "runtime" : {
          "requires" : {
-            "Catmandu" : "0.9204",
+            "Catmandu" : "0.9",
             "HTTP::OAI" : "4.03",
             "IO::Socket::SSL" : "1.993",
+            "IO::String" : "0",
+            "MODS::Record" : "0.11",
             "Moo" : "1.0",
             "XML::Struct" : "0.18",
             "perl" : "v5.10.1"

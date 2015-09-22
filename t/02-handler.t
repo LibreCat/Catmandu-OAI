@@ -14,7 +14,7 @@ ok $handler;
 
 if ($ENV{RELEASE_TESTING}) {
 	my $importer = Catmandu::Importer::OAI->new(
-	    url => 'http://search.ugent.be/meercat/x/oai',
+	    url => 'http://lib.ugent.be/oai',
 	    metadataPrefix => 'marcxml',
 	    set => "eu",
 	    handler => $handler,
@@ -29,7 +29,7 @@ if ($ENV{RELEASE_TESTING}) {
     #---
 
 	$importer = Catmandu::Importer::OAI->new(
-	    url => 'http://search.ugent.be/meercat/x/oai',
+	    url => 'http://lib.ugent.be/oai',
 	    metadataPrefix => 'marcxml',
 	    set => "eu",
 	    handler => '+TestParser',
@@ -43,7 +43,7 @@ if ($ENV{RELEASE_TESTING}) {
 
     #---
     $importer = Catmandu::Importer::OAI->new(
-	    url => 'http://search.ugent.be/meercat/x/oai',
+	    url => 'http://lib.ugent.be/oai',
 	    metadataPrefix => 'marcxml',
 	    set => "eu",
 	    handler => sub {
