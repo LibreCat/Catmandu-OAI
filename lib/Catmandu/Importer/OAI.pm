@@ -30,6 +30,9 @@ sub _build_handler {
     elsif ($self->metadataPrefix eq 'marcxml') {
         return 'marcxml';
     }
+    elsif ($self->metadataPrefix eq 'mods') {
+        return 'mods';
+    }
     else {
         return 'struct';
     }
@@ -261,7 +264,8 @@ C<foobar> will create a C<Catmandu::Importer::OAI::Parser::foobar> instance.
 
 By default the handler L<Catmandu::Importer::OAI::Parser::oai_dc> is used for
 metadataPrefix C<oai_dc>,  L<Catmandu::Importer::OAI::Parser::marcxml> for
-C<marcxml>, and L<Catmandu::Importer::OAI::Parser::struct> for other formats.
+C<marcxml>, L<Catmandu::Importer::OAI::Parser::mods> for
+C<mods>, and L<Catmandu::Importer::OAI::Parser::struct> for other formats.
 In addition there is L<Catmandu::Importer::OAI::Parser::raw> to return the XML
 as it is.
 

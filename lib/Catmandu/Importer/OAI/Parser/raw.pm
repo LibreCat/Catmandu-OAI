@@ -2,7 +2,6 @@ package Catmandu::Importer::OAI::Parser::raw;
 
 use Catmandu::Sane;
 use Moo;
-use XML::Struct qw(readXML);
 
 sub parse {
     my ($self,$dom) = @_;

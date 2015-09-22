@@ -1,7 +1,9 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
-
+  - Adding support for MODS
+  - Adding support for MARC collections
+  
 0.09  2015-08-17 14:50:39 CEST
   - Fixing repeated last page bug #10
   

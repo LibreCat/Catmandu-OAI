@@ -6,14 +6,16 @@ on 'test', sub {
   requires 'Test::Exception','0.32';
 };
 
-requires 'Catmandu', '0.9204';
-requires 'HTTP::OAI', '4.03';
-requires 'Moo', '1.0';
-requires 'XML::Struct', '0.18';
+requires 'Catmandu', '>=0.9';
+requires 'HTTP::OAI', '>=4.03';
+requires 'Moo', '>=1.0';
+requires 'XML::Struct', '>=0.18';
+requires 'MODS::Record', '>=0.11';
+requires 'IO::String', '0';
 
 # Need recent SSL to talk to https endpoint correctly
-requires 'IO::Socket::SSL', '1.993';
+requires 'IO::Socket::SSL', '>=1.993';
 
 feature 'xslt' => sub {
-    requires 'Catmandu::XML', '0.15';
+    requires 'Catmandu::XML', '>=0.15';
 };

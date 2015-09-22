@@ -11,8 +11,13 @@ sub parse {
     my @out;
     my $id = undef;
 
+    # Read in the collection tag if available
+    if ($dom->localname eq 'collection') {
+      $dom = $dom->firstChild;
+    }
+
     for my $field ($dom->getChildrenByLocalName('*')) {
-        my $name = $field->localname;
+        my $name  = $field->localname;
         my $value = $field->textContent // '';
         if ($name eq 'leader') {
             push @out, [ 'LDR', ' ', ' ', '_', $value ];
