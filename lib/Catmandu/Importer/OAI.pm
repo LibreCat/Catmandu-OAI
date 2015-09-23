@@ -222,7 +222,7 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
     # From the command line
     $ catmandu convert OAI --url http://myrepo.org/oai
 
-    $ catmandu convert OAI --url http://myrepo.org/oai --metadataPrefix didl --handler RAW
+    $ catmandu convert OAI --url http://myrepo.org/oai --metadataPrefix didl --handler raw
 
     # In perl
     use Catmandu::Importer::OAI;
