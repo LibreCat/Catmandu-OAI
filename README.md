@@ -6,6 +6,8 @@ Catmandu::OAI - Catmandu modules for working with OAI repositories
 
     # From the command line
     $ catmandu convert OAI --url http://biblio.ugent.be/oai --set allFtxt
+    $ catmandu convert OAI --url http://biblio.ugent.be/oai --metadataPrefix mods --set books
+    $ catmandu convert OAI --url http://biblio.ugent.be/oai --metadataPrefix mods --set books --handler raw
     $ catmandu import OAI --url http://biblio.ugent.be/oai --set allFtxt to MongoDB --database-name biblio
 
     # From Perl
