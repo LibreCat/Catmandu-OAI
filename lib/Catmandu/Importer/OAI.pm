@@ -70,7 +70,9 @@ sub _coerce_xslt {
 
 sub _build_oai {
     my ($self) = @_;
-    HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
+    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
+    $agent->env_proxy;
+    $agent;
 }
 
 sub _map_record {
@@ -172,8 +174,8 @@ sub oai_run {
 
             if ($res->is_error) {
                 my $token = $resumptionToken // '';
-                $self->log->error("resumptionToken($token) : " . $res->message);
-                carp "resumptionToken($token) : " . $res->message;
+                $self->log->error($self->url . " : $token : " . $res->message);
+                print STDERR "ERROR: " . $self->url . " : $token : " . $res->message . "\n";
                 return undef;
             }
 
@@ -301,6 +303,13 @@ Preprocess XML records with XSLT script(s) given as comma separated list or
 array reference. Requires L<Catmandu::XML>.
 
 =back
+
+=head1 ENVIRONMENT
+
+If you are connected to the internet via a proxy server you need to set the
+coordinates to this proxy in your environment:
+
+    export http_proxy="http://localhost:8080"
 
 =head1 DESCRIPTION
 
