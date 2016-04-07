@@ -4,6 +4,8 @@ use Catmandu::Sane;
 use Moo;
 use XML::Struct qw(readXML);
 
+our $VERSION = '0.11';
+
 sub parse {
     my ($self,$dom) = @_;
 

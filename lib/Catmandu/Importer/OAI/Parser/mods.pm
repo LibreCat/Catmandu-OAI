@@ -6,6 +6,8 @@ use MODS::Record;
 use Catmandu::Util;
 use JSON;
 
+our $VERSION = '0.11';
+
 with 'Catmandu::Logger';
 
 sub parse {

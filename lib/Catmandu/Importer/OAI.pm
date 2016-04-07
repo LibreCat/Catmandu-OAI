@@ -8,6 +8,8 @@ use HTTP::OAI;
 use Data::Dumper;
 use Carp;
 
+our $VERSION = '0.11';
+
 with 'Catmandu::Importer';
 
 has url     => (is => 'ro', required => 1);
