@@ -313,6 +313,12 @@ coordinates to this proxy in your environment:
 
     export http_proxy="http://localhost:8080"
 
+If you are connecting to a HTTPS server and don't want to verify the validity
+of certificates of the peer you can set the PERL_LWP_SSL_VERIFY_HOSTNAME to 
+false in your environment. This maybe required to connect to broken SSL servers:
+
+    export PERL_LWP_SSL_VERIFY_HOSTNAME=0
+
 =head1 DESCRIPTION
 
 Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
