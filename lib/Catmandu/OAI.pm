@@ -45,9 +45,11 @@ Patrick Hochstenbach, C<< <patrick.hochstenbach at ugent.be> >>
 
 Jakob Voss, C<< <nichtich at cpan.org> >>
 
+Nicolas Franck, C<< <nicolas.franck at ugent.be> >>
+
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Ghent University Library
+Copyright 2016 Ghent University Library
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
@@ -58,4 +60,3 @@ See http://dev.perl.org/licenses/ for more information.
 =cut
 
 1;
-
