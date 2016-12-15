@@ -329,6 +329,15 @@ Don't do any HTTP requests but return URLs that data would be queried from.
 Preprocess XML records with XSLT script(s) given as comma separated list or
 array reference. Requires L<Catmandu::XML>.
 
+=item max_retries
+
+When an oai request fails, the importer will retry this number of times.
+Set to '0' by default.
+
+Internally the exponential backoff algorithm is used
+for this. This means that after every failed request the importer
+sleeps for a random number of seconds, choosen between 0 and 2^collision - 1.
+
 =back
 
 =head1 ENVIRONMENT
