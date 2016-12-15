@@ -1,18 +1,21 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+
+0.12  2016-12-15 15:19:57 CET
+  - Adding max-retries feature to reconnect to a database when the network fails
   - More pod
-  
+
 0.11  2015-10-15 11:59:19 CEST
   - Adding support for proxys
-  
+
 0.10  2015-09-23 10:28:29 CEST
   - Adding support for MODS
   - Adding support for MARC collections
-  
+
 0.09  2015-08-17 14:50:39 CEST
   - Fixing repeated last page bug #10
-  
+
 0.08  2015-07-03 11:31:26 CEST
   - Don't bundle the dist.ini in distribution
   - Adding resumpionToken option
@@ -23,7 +26,7 @@ Revision history for Catmandu-OAI
 0.06  2014-06-22 11:10:24 CEST
   - Refactoring the handler code into Parsers, more in line with Catmandu::SRU
   - Adding marcxml parser
-  
+
 0.05  2014-06-22 09:34:00 CEST
   - Adding support for default XML::Struct parsing
   - Adding support for passing handlers by name and by invocation
@@ -32,7 +35,7 @@ Revision history for Catmandu-OAI
 0.04  2014-06-15 20:30:07 CEST
   - switched to the new HTTP::OAI with callbacks
   - adding a network test
-  
+
 0.03  2014-06-15 10:22:55 CEST
   - new option: dry (as supported my Catmandu::Importer::getJSON)
   - new option: listIdentifiers

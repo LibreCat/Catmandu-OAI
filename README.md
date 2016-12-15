@@ -35,9 +35,11 @@ Patrick Hochstenbach, `<patrick.hochstenbach at ugent.be>`
 
 Jakob Voss, `<nichtich at cpan.org>`
 
+Nicolas Franck, `<nicolas.franck at ugent.be>`
+
 # LICENSE AND COPYRIGHT
 
-Copyright 2012 Ghent University Library
+Copyright 2016 Ghent University Library
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

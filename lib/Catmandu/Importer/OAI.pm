@@ -8,7 +8,7 @@ use HTTP::OAI;
 use Carp;
 use Catmandu::Error;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 with 'Catmandu::Importer';
 
