@@ -5,8 +5,8 @@ use Catmandu::Util qw(:is);
 use Moo;
 use Scalar::Util qw(blessed);
 use HTTP::OAI;
-use Data::Dumper;
 use Carp;
+use Catmandu::Error;
 
 our $VERSION = '0.11';
 
@@ -23,12 +23,14 @@ has resumptionToken => (is => 'ro');
 has oai     => (is => 'ro', lazy => 1, builder => 1);
 has dry     => (is => 'ro');
 has listIdentifiers => (is => 'ro');
+has max_retries => ( is => 'ro', default => sub { 0 } );
+has _retried => ( is => 'rw', default => sub { 0; } );
 
 sub _build_handler {
     my ($self) = @_;
     if ($self->metadataPrefix eq 'oai_dc') {
         return 'oai_dc';
-    } 
+    }
     elsif ($self->metadataPrefix eq 'marcxml') {
         return 'marcxml';
     }
@@ -108,7 +110,7 @@ sub _map_record {
 
 sub _args {
     my ($self) = @_;
-    
+
     my %args = (
         metadataPrefix => $self->metadataPrefix,
         set => $self->set ,
@@ -118,7 +120,7 @@ sub _args {
 
     for( keys %args ) {
         delete $args{$_} if !defined($args{$_}) || !length($args{$_});
-    } 
+    }
 
     return %args;
 }
@@ -140,9 +142,9 @@ sub dry_run {
         return if $called;
         $called = 1;
         # TODO: make sure that HTTP::OAI does not change this internal method
-        return { 
-            url => $self->oai->_buildurl( 
-                $self->_args, 
+        return {
+            url => $self->oai->_buildurl(
+                $self->_args,
                 verb => ($self->listIdentifiers ? 'ListIdentifiers' : 'ListRecords')
             )
         };
@@ -170,24 +172,47 @@ sub oai_run {
                 %args = (verb => $verb , resumptionToken => $resumptionToken);
             }
 
-            my $res = $self->listIdentifiers 
-                ? $self->oai->ListIdentifiers( %args , onRecord => $fill_stack )
-                : $self->oai->ListRecords( %args , onRecord => $fill_stack );
+            $self->_retried( 0 );
 
-            if ($res->is_error) {
-                my $token = $resumptionToken // '';
-                $self->log->error($self->url . " : $token : " . $res->message);
-                print STDERR "ERROR: " . $self->url . " : $token : " . $res->message . "\n";
-                return undef;
+            while(1){
+
+                my $res = $self->listIdentifiers
+                    ? $self->oai->ListIdentifiers( %args , onRecord => $fill_stack )
+                    : $self->oai->ListRecords( %args , onRecord => $fill_stack );
+
+                if ($res->is_error) {
+
+                    my $max_retries = $self->max_retries();
+                    my $_retried = $self->_retried();
+
+                    if ( $max_retries > 0 && $_retried < $max_retries  ){
+
+                        $_retried++;
+
+                        #exponential backoff:  [0 .. 2^c [
+                        my $n_seconds = int( 2**$_retried );
+                        $self->log->error("failed, retrying after $n_seconds");
+                        sleep $n_seconds;
+                        $self->_retried( $_retried );
+                        next;
+                    }
+                    else{
+                        my $token = $resumptionToken // '';
+                        my $err_msg = $self->url . " : $token : " . $res->message." (stopped after ".$self->_retried()." retries)";
+                        $self->log->error( $err_msg );
+                        Catmandu::Error->throw( $err_msg );
+                    }
+                }
+
+                if (defined $res->resumptionToken) {
+                    $resumptionToken = $res->resumptionToken->resumptionToken;
+                }
+                else {
+                    $resumptionToken = undef;
+                }
+                last;
             }
 
-            if (defined $res->resumptionToken) {
-                $resumptionToken = $res->resumptionToken->resumptionToken;
-            }
-            else {
-                $resumptionToken = undef;
-            }
-           
             unless (defined $resumptionToken && length $resumptionToken) {
                 $done = 1;
             }
@@ -254,14 +279,14 @@ OAI-PMH Base URL.
 
 =item metadataPrefix
 
-Metadata prefix to specify the metadata format. Set to C<oai_dc> by default. 
+Metadata prefix to specify the metadata format. Set to C<oai_dc> by default.
 
 =item handler( sub {} | $object | 'NAME' | '+NAME' )
 
 Handler to transform each record from XML DOM (L<XML::LibXML::Element>) into
 Perl hash.
 
-Handlers can be provided as function reference, an instance of a Perl 
+Handlers can be provided as function reference, an instance of a Perl
 package that implements 'parse', or by a package NAME. Package names should
 be prepended by C<+> or prefixed with C<Catmandu::Importer::OAI::Parser>. E.g
 C<foobar> will create a C<Catmandu::Importer::OAI::Parser::foobar> instance.
@@ -297,12 +322,30 @@ An optional resumptionToken to start harvesting from.
 
 =item dry
 
-Don't do any HTTP requests but return URLs that data would be queried from. 
+Don't do any HTTP requests but return URLs that data would be queried from.
 
 =item xslt
 
 Preprocess XML records with XSLT script(s) given as comma separated list or
 array reference. Requires L<Catmandu::XML>.
+
+=item max_retries
+
+When an oai request fails, the importer will retry this number of times.
+Set to '0' by default.
+
+Internally the exponential backoff algorithm is used
+for this. This means that after every failed request the importer
+sleeps for 2^collision seconds. The maximum ammount of time after which
+the importer stops can be calculated with:
+
+ max_retries = 1 -> max = 2 seconds
+ max_retries = 2 -> max = 2 + 4 = 6 seconds
+ max_retries = 3 -> max = 2 + 4 + 8 = 14 seconds
+ .
+ .
+ .
+ max_retries = n -> max = 2^(n + 1) - 2 seconds
 
 =back
 
@@ -314,7 +357,7 @@ coordinates to this proxy in your environment:
     export http_proxy="http://localhost:8080"
 
 If you are connecting to a HTTPS server and don't want to verify the validity
-of certificates of the peer you can set the PERL_LWP_SSL_VERIFY_HOSTNAME to 
+of certificates of the peer you can set the PERL_LWP_SSL_VERIFY_HOSTNAME to
 false in your environment. This maybe required to connect to broken SSL servers:
 
     export PERL_LWP_SSL_VERIFY_HOSTNAME=0
