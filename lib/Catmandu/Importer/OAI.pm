@@ -190,7 +190,7 @@ sub oai_run {
                         $_retried++;
 
                         #exponential backoff:  [0 .. 2^c [
-                        my $n_seconds = int( rand( 2**$_retried ) );
+                        my $n_seconds = int( 2**$_retried );
                         $self->log->error("failed, retrying after $n_seconds");
                         sleep $n_seconds;
                         $self->_retried( $_retried );
@@ -336,7 +336,16 @@ Set to '0' by default.
 
 Internally the exponential backoff algorithm is used
 for this. This means that after every failed request the importer
-sleeps for a random number of seconds, choosen between 0 and 2^collision - 1.
+sleeps for 2^collision seconds. The maximum ammount of time after which
+the importer stops can be calculated with:
+
+ max_retries = 1 -> max = 2 seconds
+ max_retries = 2 -> max = 2 + 4 = 6 seconds
+ max_retries = 3 -> max = 2 + 4 + 8 = 14 seconds
+ .
+ .
+ .
+ max_retries = n -> max = 2^(n + 1) - 2 seconds
 
 =back
 
