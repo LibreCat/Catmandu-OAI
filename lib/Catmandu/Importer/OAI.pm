@@ -341,11 +341,11 @@ and wait that number of seconds. So the actual ammount of time before
 the importer stops can differ:
 
  first retry:
-    [ 0..2^1 [
+    wait [ 0..2^1 [ seconds
  second retry:
-    [ 0..2^2 [
+    wait [ 0..2^2 [ seconds
  third retry:
-    [ 0..2^3 [
+    wait [ 0..2^3 [ seconds
 
  ..
 
