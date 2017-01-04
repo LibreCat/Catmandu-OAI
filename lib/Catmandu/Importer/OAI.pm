@@ -23,8 +23,10 @@ has resumptionToken => (is => 'ro');
 has oai     => (is => 'ro', lazy => 1, builder => 1);
 has dry     => (is => 'ro');
 has listIdentifiers => (is => 'ro');
+has listSets => (is => 'ro');
 has max_retries => ( is => 'ro', default => sub { 0 } );
 has _retried => ( is => 'rw', default => sub { 0; } );
+has _xml_handlers => ( is => 'ro', default => sub { +{} } );
 
 sub _build_handler {
     my ($self) = @_;
@@ -78,7 +80,53 @@ sub _build_oai {
     $agent->env_proxy;
     $agent;
 }
+sub _xml_handler_for_node {
+    my ( $self, $node ) = @_;
+    my $ns = $node->namespaceURI();
 
+    my $type;
+
+    if( $ns eq "http://www.openarchives.org/OAI/2.0/oai_dc/" ){
+
+        $type = "oai_dc";
+
+    }
+    elsif( $ns eq "http://www.loc.gov/MARC21/slim" ){
+
+        $type = "marcxml";
+
+    }
+    elsif( $ns eq "http://www.loc.gov/mods/v3" ){
+
+        $type = "mods";
+
+    }
+    else{
+
+        $type = "struct";
+
+    }
+
+    $self->_xml_handlers()->{$type} ||= Catmandu::Util::require_package( "Catmandu::Importer::OAI::Parser::$type" )->new();
+}
+sub _map_set {
+    my ($self, $rec) = @_;
+
+    +{
+        _id => $rec->setSpec(),
+        setSpec => $rec->setSpec(),
+        setName => $rec->setName(),
+        setDescription => [ map {
+
+            #root: 'setDescription'
+            my @root = $_->dom()->childNodes();
+            #child: oai_dc, marcxml, mods..
+            my @children = $root[0]->childNodes();
+            $self->_xml_handler_for_node( $children[0] )->parse( $children[0] );
+
+        } $rec->setDescription() ]
+    };
+}
 sub _map_record {
     my ($self, $rec) = @_;
 
@@ -142,10 +190,17 @@ sub dry_run {
         return if $called;
         $called = 1;
         # TODO: make sure that HTTP::OAI does not change this internal method
-        return {
+        my %args = $self->listIdentifiers() && !$self->listSets() ? $self->_args: ();
+        return +{
             url => $self->oai->_buildurl(
-                $self->_args,
-                verb => ($self->listIdentifiers ? 'ListIdentifiers' : 'ListRecords')
+                %args,
+                verb => (
+                    $self->listIdentifiers ?
+                        'ListIdentifiers' :
+                        $self->listSets ?
+                            'ListSets' :
+                            'ListRecords'
+                )
             )
         };
     };
@@ -177,8 +232,10 @@ sub oai_run {
             while(1){
 
                 my $res = $self->listIdentifiers
-                    ? $self->oai->ListIdentifiers( %args , onRecord => $fill_stack )
-                    : $self->oai->ListRecords( %args , onRecord => $fill_stack );
+                    ? $self->oai->ListIdentifiers( %args , onRecord => $fill_stack ) :
+                    $self->listSets() ?
+                        $self->oai->ListSets( onRecord => $fill_stack ) :
+                        $self->oai->ListRecords( %args , onRecord => $fill_stack );
 
                 if ($res->is_error) {
 
@@ -221,7 +278,11 @@ sub oai_run {
         if (my $rec = shift @$stack) {
             if ($rec->isa('HTTP::OAI::Record')) {
                 return $self->_map_record($rec);
-            } else {
+            }
+            elsif ( $rec->isa('HTTP::OAI::Set') ) {
+                return $self->_map_set($rec);
+            }
+            else {
                 return {
                     _id => $rec->identifier,
                     _datestamp  => $rec->datestamp,
@@ -236,6 +297,13 @@ sub oai_run {
 
 sub generator {
     my ($self) = @_;
+
+    if( $self->listIdentifiers() && $self->listSets() ){
+
+        croak "options listIdentifiers and listSets cannot be set both";
+
+    }
+
     return $self->dry ? $self->dry_run : $self->oai_run;
 }
 
@@ -315,6 +383,10 @@ for datestamp-based selective harvesting.
 =item listIdentifiers
 
 Harvest identifiers instead of full records.
+
+=item listSets
+
+Harvest sets instead of records
 
 =item resumptionToken
 
