@@ -156,8 +156,8 @@ sub _map_record {
     $data;
 }
 
-sub _args {
-    my ($self) = @_;
+sub _args_for_records {
+    my $self = $_[0];
 
     my %args = (
         metadataPrefix => $self->metadataPrefix,
@@ -172,7 +172,29 @@ sub _args {
 
     return %args;
 }
+sub _args {
+    my $self = $_[0];
 
+    my %args;
+
+    if( $self->listSets() ){
+
+    }
+    else{
+        %args = $self->_args_for_records();
+    }
+
+    %args;
+}
+sub _verb {
+    my $self = $_[0];
+
+    $self->listIdentifiers ?
+        'ListIdentifiers' :
+        $self->listSets ?
+            'ListSets' :
+            'ListRecords';
+}
 sub handle_record {
     my ($self, $dom) = @_;
     return unless $dom;
@@ -190,17 +212,10 @@ sub dry_run {
         return if $called;
         $called = 1;
         # TODO: make sure that HTTP::OAI does not change this internal method
-        my %args = $self->listIdentifiers() && !$self->listSets() ? $self->_args: ();
         return +{
             url => $self->oai->_buildurl(
-                %args,
-                verb => (
-                    $self->listIdentifiers ?
-                        'ListIdentifiers' :
-                        $self->listSets ?
-                            'ListSets' :
-                            'ListRecords'
-                )
+                $self->_args(),
+                verb => $self->_verb()
             )
         };
     };
