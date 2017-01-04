@@ -220,9 +220,48 @@ sub dry_run {
         };
     };
 }
+sub _retry {
+    my ( $self, $sub ) = @_;
 
-sub oai_run {
-    my ($self) = @_;
+    $self->_retried( 0 );
+
+    my $res;
+
+    while ( 1 ) {
+
+        $res = $sub->();
+
+        if ($res->is_error) {
+
+            my $max_retries = $self->max_retries();
+            my $_retried = $self->_retried();
+
+            if ( $max_retries > 0 && $_retried < $max_retries  ){
+
+                $_retried++;
+
+                #exponential backoff:  [0 .. 2^c [
+                my $n_seconds = int( 2**$_retried );
+                $self->log->error("failed, retrying after $n_seconds");
+                sleep $n_seconds;
+                $self->_retried( $_retried );
+                next;
+            }
+            else{
+                my $err_msg = $self->url . " : " . $res->message." (stopped after ".$self->_retried()." retries)";
+                $self->log->error( $err_msg );
+                Catmandu::Error->throw( $err_msg );
+            }
+
+        }
+
+        last;
+    }
+
+    $res;
+}
+sub _list_records {
+    my $self = $_[0];
     sub {
         state $stack = [];
         state $resumptionToken = $self->resumptionToken;
@@ -242,47 +281,16 @@ sub oai_run {
                 %args = (verb => $verb , resumptionToken => $resumptionToken);
             }
 
-            $self->_retried( 0 );
+            my $sub = $self->listIdentifiers() ?
+                sub { $self->oai->ListIdentifiers( %args , onRecord => $fill_stack ); } :
+                sub { $self->oai->ListRecords( %args , onRecord => $fill_stack ); };
 
-            while(1){
-
-                my $res = $self->listIdentifiers
-                    ? $self->oai->ListIdentifiers( %args , onRecord => $fill_stack ) :
-                    $self->listSets() ?
-                        $self->oai->ListSets( onRecord => $fill_stack ) :
-                        $self->oai->ListRecords( %args , onRecord => $fill_stack );
-
-                if ($res->is_error) {
-
-                    my $max_retries = $self->max_retries();
-                    my $_retried = $self->_retried();
-
-                    if ( $max_retries > 0 && $_retried < $max_retries  ){
-
-                        $_retried++;
-
-                        #exponential backoff:  [0 .. 2^c [
-                        my $n_seconds = int( 2**$_retried );
-                        $self->log->error("failed, retrying after $n_seconds");
-                        sleep $n_seconds;
-                        $self->_retried( $_retried );
-                        next;
-                    }
-                    else{
-                        my $token = $resumptionToken // '';
-                        my $err_msg = $self->url . " : $token : " . $res->message." (stopped after ".$self->_retried()." retries)";
-                        $self->log->error( $err_msg );
-                        Catmandu::Error->throw( $err_msg );
-                    }
-                }
-
-                if (defined $res->resumptionToken) {
-                    $resumptionToken = $res->resumptionToken->resumptionToken;
-                }
-                else {
-                    $resumptionToken = undef;
-                }
-                last;
+            my $res = $self->_retry( $sub );
+            if (defined $res->resumptionToken) {
+                $resumptionToken = $res->resumptionToken->resumptionToken;
+            }
+            else {
+                $resumptionToken = undef;
             }
 
             unless (defined $resumptionToken && length $resumptionToken) {
@@ -293,9 +301,6 @@ sub oai_run {
         if (my $rec = shift @$stack) {
             if ($rec->isa('HTTP::OAI::Record')) {
                 return $self->_map_record($rec);
-            }
-            elsif ( $rec->isa('HTTP::OAI::Set') ) {
-                return $self->_map_set($rec);
             }
             else {
                 return {
@@ -308,6 +313,41 @@ sub oai_run {
 
         return undef;
     };
+}
+sub _list_sets {
+    my $self = $_[0];
+    sub {
+        state $stack = [];
+        state $done  = 0;
+
+        my $fill_stack = sub {
+            push @$stack , shift;
+        };
+
+        if (@$stack <= 1 && $done == 0) {
+            my %args = $self->_args;
+
+            my $sub = sub { $self->oai->ListSets( onRecord => $fill_stack ); };
+
+            my $res = $self->_retry( $sub );
+            $done = 1;
+        }
+
+        if (my $rec = shift @$stack) {
+            return $self->_map_set($rec);
+        }
+
+        return undef;
+    };
+}
+
+sub oai_run {
+    my ($self) = @_;
+
+    $self->listSets() ?
+        $self->_list_sets() :
+        $self->_list_records();
+
 }
 
 sub generator {
