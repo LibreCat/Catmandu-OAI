@@ -1,7 +1,8 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
-
+  - Making retries using exponential cutoff algorithm
+  
 0.12  2016-12-15 15:19:57 CET
   - Adding max-retries feature to reconnect to a database when the network fails
   - More pod
