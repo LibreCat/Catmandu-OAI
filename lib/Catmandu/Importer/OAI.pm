@@ -1,7 +1,7 @@
 package Catmandu::Importer::OAI;
 
 use Catmandu::Sane;
-use Catmandu::Util qw(:is);
+use Catmandu::Util qw(:is :check);
 use Moo;
 use Scalar::Util qw(blessed);
 use HTTP::OAI;
@@ -27,6 +27,13 @@ has listSets => (is => 'ro');
 has max_retries => ( is => 'ro', default => sub { 0 } );
 has _retried => ( is => 'rw', default => sub { 0; } );
 has _xml_handlers => ( is => 'ro', default => sub { +{} } );
+has credentials => (
+    is => 'ro',
+    isa => sub { check_array_ref($_[0]); },
+    required => 0,
+    lazy => 1,
+    default => sub { []; }
+);
 
 sub _build_handler {
     my ($self) = @_;
@@ -78,6 +85,8 @@ sub _build_oai {
     my ($self) = @_;
     my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
     $agent->env_proxy;
+    my @credentials = @{ $self->credentials() };
+    $agent->credentials( @credentials ) if scalar( @credentials ) > 0;
     $agent;
 }
 sub _xml_handler_for_node {
