@@ -16,6 +16,10 @@ has url     => (is => 'ro', required => 1);
 has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
 has handler => (is => 'rw', lazy => 1 , builder => 1, coerce => \&_coerce_handler );
 has xslt    => (is => 'ro', coerce => \&_coerce_xslt );
+has ntlm_host => (is => 'ro', predicate => 1);
+has ntlm_realm => (is => 'ro');
+has ntlm_user => (is => 'ro', predicate => 1);
+has ntlm_password => (is => 'ro', predicate => 1);
 has set     => (is => 'ro');
 has from    => (is => 'ro');
 has until   => (is => 'ro');
@@ -74,7 +78,12 @@ sub _coerce_xslt {
 
 sub _build_oai {
     my ($self) = @_;
-    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
+    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0, keep_alive => 1);
+
+    if ($self->has_ntlm_host and $self->has_ntlm_user and $self->has_ntlm_password) {
+      $agent->credentials($self->ntlm_host, $self->ntlm_realm, $self->ntlm_user, $self->ntlm_password);
+    }
+
     $agent->env_proxy;
     $agent;
 }
