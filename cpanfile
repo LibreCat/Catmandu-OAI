@@ -13,6 +13,7 @@ requires 'Moo', '>=1.0';
 requires 'XML::Struct', '>=0.18';
 requires 'MODS::Record', '>=0.11';
 requires 'IO::String', '0';
+requires 'URI','0';
 
 # Need recent SSL to talk to https endpoint correctly
 requires 'IO::Socket::SSL', '>=1.993';

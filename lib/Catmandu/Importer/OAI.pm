@@ -1,12 +1,13 @@
 package Catmandu::Importer::OAI;
 
 use Catmandu::Sane;
-use Catmandu::Util qw(:is :check);
+use Catmandu::Util qw(:is);
 use Moo;
 use Scalar::Util qw(blessed);
 use HTTP::OAI;
 use Carp;
 use Catmandu::Error;
+use URI;
 
 our $VERSION = '0.12';
 
@@ -27,13 +28,9 @@ has listSets => (is => 'ro');
 has max_retries => ( is => 'ro', default => sub { 0 } );
 has _retried => ( is => 'rw', default => sub { 0; } );
 has _xml_handlers => ( is => 'ro', default => sub { +{} } );
-has credentials => (
-    is => 'ro',
-    isa => sub { check_array_ref($_[0]); },
-    required => 0,
-    lazy => 1,
-    default => sub { []; }
-);
+has realm => ( is => 'ro', predicate => 1 );
+has username => ( is => 'ro', predicate => 1 );
+has password => ( is => 'ro', predicate => 1 );
 
 sub _build_handler {
     my ($self) = @_;
@@ -84,9 +81,19 @@ sub _coerce_xslt {
 sub _build_oai {
     my ($self) = @_;
     my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
+    if( $self->has_username && $self->has_password ) {
+
+        my $uri = URI->new( $self->url );
+        my @credentials = (
+            $uri->host_port,
+            $self->realm || "",
+            $self->username,
+            $self->password
+        );
+        $agent->credentials( @credentials );
+
+    }
     $agent->env_proxy;
-    my @credentials = @{ $self->credentials() };
-    $agent->credentials( @credentials ) if scalar( @credentials ) > 0;
     $agent;
 }
 sub _xml_handler_for_node {
