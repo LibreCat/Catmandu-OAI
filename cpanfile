@@ -7,7 +7,7 @@ on 'test', sub {
   requires 'Test::Pod';
 };
 
-requires 'Catmandu', '>=0.9';
+requires 'Catmandu', '>=1.0306';
 requires 'HTTP::OAI', '>=4.03';
 requires 'Moo', '>=1.0';
 requires 'XML::Struct', '>=0.18';
