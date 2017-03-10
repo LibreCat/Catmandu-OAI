@@ -80,7 +80,7 @@ sub _coerce_xslt {
 
 sub _build_oai {
     my ($self) = @_;
-    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
+    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0, keep_alive => 1);
     if( $self->has_username && $self->has_password ) {
 
         my $uri = URI->new( $self->url );
@@ -91,7 +91,6 @@ sub _build_oai {
             $self->password
         );
         $agent->credentials( @credentials );
-
     }
     $agent->env_proxy;
     $agent;
@@ -491,6 +490,22 @@ the importer stops can differ:
     wait [ 0..2^3 [ seconds
 
  ..
+
+=item realm
+
+An optional realm value. This value is used when the importer harvests from a
+repository which is secured with basic authentication through Integrated Windows
+Authentication (NTLM or Kerberos).
+
+=item username
+
+An optional username value. This value is used when the importer harvests from a
+repository which is secured with basic authentication.
+
+=item password
+
+An optional password value. This value is used when the importer harvests from a
+repository which is secured with basic authentication.
 
 =back
 
