@@ -491,6 +491,22 @@ the importer stops can differ:
 
  ..
 
+=item realm
+
+An optional realm value. This value is used when the importer harvests from a
+repository which is secured with basic authentication through Integrated Windows
+Authentication (NTLM or Kerberos).
+
+=item username
+
+An optional username value. This value is used when the importer harvests from a
+repository which is secured with basic authentication.
+
+=item password
+
+An optional password value. This value is used when the importer harvests from a
+repository which is secured with basic authentication.
+
 =back
 
 =head1 ENVIRONMENT
