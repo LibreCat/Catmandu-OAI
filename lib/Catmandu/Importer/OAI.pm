@@ -80,7 +80,7 @@ sub _coerce_xslt {
 
 sub _build_oai {
     my ($self) = @_;
-    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0);
+    my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0, keep_alive => 1);
     if( $self->has_username && $self->has_password ) {
 
         my $uri = URI->new( $self->url );
@@ -91,7 +91,6 @@ sub _build_oai {
             $self->password
         );
         $agent->credentials( @credentials );
-
     }
     $agent->env_proxy;
     $agent;
