@@ -95,6 +95,7 @@ sub _build_oai {
     $agent->env_proxy;
     $agent;
 }
+
 sub _xml_handler_for_node {
     my ( $self, $node ) = @_;
     my $ns = $node->namespaceURI();
@@ -124,6 +125,7 @@ sub _xml_handler_for_node {
 
     $self->_xml_handlers()->{$type} ||= Catmandu::Util::require_package( "Catmandu::Importer::OAI::Parser::$type" )->new();
 }
+
 sub _map_set {
     my ($self, $rec) = @_;
 
@@ -142,6 +144,7 @@ sub _map_set {
         } $rec->setDescription() ]
     };
 }
+
 sub _map_record {
     my ($self, $rec) = @_;
 
@@ -187,6 +190,7 @@ sub _args_for_records {
 
     return %args;
 }
+
 sub _args {
     my $self = $_[0];
 
@@ -201,6 +205,7 @@ sub _args {
 
     %args;
 }
+
 sub _verb {
     my $self = $_[0];
 
@@ -210,6 +215,7 @@ sub _verb {
             'ListSets' :
             'ListRecords';
 }
+
 sub handle_record {
     my ($self, $dom) = @_;
     return unless $dom;
@@ -235,6 +241,7 @@ sub dry_run {
         };
     };
 }
+
 sub _retry {
     my ( $self, $sub ) = @_;
 
@@ -275,6 +282,7 @@ sub _retry {
 
     $res;
 }
+
 sub _list_records {
     my $self = $_[0];
     sub {
@@ -329,6 +337,7 @@ sub _list_records {
         return undef;
     };
 }
+
 sub _list_sets {
     my $self = $_[0];
     sub {
