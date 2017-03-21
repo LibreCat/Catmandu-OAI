@@ -4,3 +4,4 @@ Catmandu-OAI-*
 LICENSE
 local
 cpanfile.snapshot
+.perl-version
