@@ -19,8 +19,7 @@ sub parse {
     my $perl = { error => 1 };
 
     eval {
-        my $io   = Catmandu::Util::io \$xml , mode => 'r', encoding => ':encoding(utf8)';
-        my $mods = MODS::Record->from_xml($io);
+        my $mods = MODS::Record->from_xml($xml);
         $perl = JSON::decode_json($mods->as_json);
     };
     if ($@) {
