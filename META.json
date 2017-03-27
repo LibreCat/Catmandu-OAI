@@ -81,7 +81,7 @@
          "web" : "https://github.com/LibreCat/Catmandu-OAI"
       }
    },
-   "version" : "0.13",
+   "version" : "0.14",
    "x_contributors" : [
       "Christian Pietsch <christian.pietsch@uni-bielefeld.de>",
       "Jakob Voss <voss@gbv.de>",
@@ -92,6 +92,6 @@
       "Patrick Hochstenbach <Patrick.Hochstenbach@UGent.be>",
       "Yanick Champoux <yanick@babyl.dyndns.org>"
    ],
-   "x_serialization_backend" : "Cpanel::JSON::XS version 3.0225"
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.023"
 }
 
