@@ -1,6 +1,8 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+
+0.15  2017-04-05 15:50:08 CEST
   - Adding support for GetRecord and ListMetadataFormats
   - Updated POD
 
