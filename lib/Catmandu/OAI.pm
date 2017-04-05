@@ -12,16 +12,17 @@ Catmandu::OAI - Catmandu modules for working with OAI repositories
   $ catmandu convert OAI --url http://biblio.ugent.be/oai --metadataPrefix mods --set books --handler raw
   $ catmandu import OAI --url http://biblio.ugent.be/oai --set allFtxt to MongoDB --database-name biblio
 
-  # From Perl
-  use Catmandu;
+  # Harvest identifiers
+  $ catmandu convert OAI --url http://myrepo.org/oai --listIdentifiers 1
 
-  my $importer = Catmandu->importer('OAI',url => 'http://biblio.ugent.be/oai' , set => 'allFtxt');
+  # Harvest sets
+  $ catmandu convert OAI --url http://myrepo.org/oai --listSets 1
 
-  $importer->each(sub {
-	my $item = shift;
+  # Harvest metadataFormats
+  $ catmandu convert OAI --url http://myrepo.org/oai --listMetadataFormats 1
 
-	print "%s %s\n", $item->{_identifier} , $item->{title}->[0];
-  });
+  # Harvest one record
+  $ catmandu convert OAI --url http://myrepo.org/oai --getRecord 1 --identifier oai:myrepo:1234
 
 =cut
 

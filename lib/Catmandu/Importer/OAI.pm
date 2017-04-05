@@ -13,24 +13,29 @@ our $VERSION = '0.14';
 
 with 'Catmandu::Importer';
 
-has url     => (is => 'ro', required => 1);
-has metadataPrefix => (is => 'ro' , default => sub { "oai_dc" });
-has handler => (is => 'rw', lazy => 1 , builder => 1, coerce => \&_coerce_handler );
-has xslt    => (is => 'ro', coerce => \&_coerce_xslt );
-has set     => (is => 'ro');
-has from    => (is => 'ro');
-has until   => (is => 'ro');
-has resumptionToken => (is => 'ro');
-has oai     => (is => 'ro', lazy => 1, builder => 1);
-has dry     => (is => 'ro');
-has listIdentifiers => (is => 'ro');
-has listSets => (is => 'ro');
-has max_retries => ( is => 'ro', default => sub { 0 } );
-has _retried => ( is => 'rw', default => sub { 0; } );
-has _xml_handlers => ( is => 'ro', default => sub { +{} } );
-has realm => ( is => 'ro', predicate => 1 );
-has username => ( is => 'ro', predicate => 1 );
-has password => ( is => 'ro', predicate => 1 );
+has url                    => (is => 'ro', required => 1);
+has identifier             => (is => 'ro');
+has metadataPrefix         => (is => 'ro', default => sub { "oai_dc" });
+has set                    => (is => 'ro');
+has from                   => (is => 'ro');
+has until                  => (is => 'ro');
+has resumptionToken        => (is => 'ro');
+
+has listIdentifiers        => (is => 'ro');
+has listSets               => (is => 'ro');
+has listMetadataFormats    => (is => 'ro');
+has getRecord              => (is => 'ro');
+
+has oai                    => (is => 'ro', lazy => 1, builder => 1);
+has dry                    => (is => 'ro');
+has handler                => (is => 'rw', lazy => 1 , builder => 1, coerce => \&_coerce_handler );
+has xslt                   => (is => 'ro', coerce => \&_coerce_xslt );
+has max_retries            => ( is => 'ro', default => sub { 0 } );
+has _retried               => ( is => 'rw', default => sub { 0; } );
+has _xml_handlers          => ( is => 'ro', default => sub { +{} } );
+has realm                  => ( is => 'ro', predicate => 1 );
+has username               => ( is => 'ro', predicate => 1 );
+has password               => ( is => 'ro', predicate => 1 );
 
 sub _build_handler {
     my ($self) = @_;
@@ -82,11 +87,11 @@ sub _build_oai {
     my ($self) = @_;
     my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0, keep_alive => 1);
     if( $self->has_username && $self->has_password ) {
-
+        carp "Probably you need a username,password and realm" unless $self->realm;
         my $uri = URI->new( $self->url );
         my @credentials = (
             $uri->host_port,
-            $self->realm || "",
+            $self->realm || undef,
             $self->username,
             $self->password
         );
@@ -145,6 +150,18 @@ sub _map_set {
     };
 }
 
+sub _map_format {
+    my ($self, $rec) = @_;
+
+    +{
+        _id => $rec->metadataPrefix,
+        metadataPrefix    => $rec->metadataPrefix(),
+        metadataNamespace => $rec->metadataNamespace(),
+        schema            => $rec->schema()
+    };
+}
+
+
 sub _map_record {
     my ($self, $rec) = @_;
 
@@ -178,10 +195,11 @@ sub _args_for_records {
     my $self = $_[0];
 
     my %args = (
+        identifier     => $self->identifier,
         metadataPrefix => $self->metadataPrefix,
-        set => $self->set ,
-        from => $self->from ,
-        until => $self->until ,
+        set            => $self->set ,
+        from           => $self->from ,
+        until          => $self->until ,
     );
 
     for( keys %args ) {
@@ -209,11 +227,21 @@ sub _args {
 sub _verb {
     my $self = $_[0];
 
-    $self->listIdentifiers ?
-        'ListIdentifiers' :
-        $self->listSets ?
-            'ListSets' :
-            'ListRecords';
+    if ($self->listIdentifiers) {
+        return 'ListIdentifiers';
+    }
+    elsif ($self->listSets) {
+        return 'ListSets';
+    }
+    elsif ($self->getRecord) {
+        return 'GetRecord';
+    }
+    elsif ($self->listMetadataFormats) {
+        return 'ListMetadataFormats';
+    }
+    else {
+        return 'ListRecords';
+    }
 }
 
 sub handle_record {
@@ -274,7 +302,6 @@ sub _retry {
                 $self->log->error( $err_msg );
                 Catmandu::Error->throw( $err_msg );
             }
-
         }
 
         last;
@@ -365,23 +392,95 @@ sub _list_sets {
     };
 }
 
+sub _get_record {
+    my $self = $_[0];
+    sub {
+        state $stack = [];
+        state $done  = 0;
+
+        my $fill_stack = sub {
+            push @$stack , shift;
+        };
+
+        if (@$stack <= 1 && $done == 0) {
+            my %args = $self->_args;
+            my $sub  = sub { $self->oai->GetRecord(%args , onRecord => $fill_stack) };
+            my $res  = $self->_retry( $sub );
+            $done = 1;
+        }
+
+        if (my $rec = shift @$stack) {
+            if ($rec->isa('HTTP::OAI::Record')) {
+                return $self->_map_record($rec);
+            }
+            else {
+                return {
+                    _id => $rec->identifier,
+                    _datestamp  => $rec->datestamp,
+                    _status => $rec->status // "",
+                }
+            }
+        }
+
+        return undef;
+    };
+}
+
+sub _list_metadata_formats {
+    my $self = $_[0];
+    sub {
+        state $stack = [];
+        state $done  = 0;
+
+        my $fill_stack = sub {
+            push @$stack , shift;
+        };
+
+        if (@$stack <= 1 && $done == 0) {
+            my %args = $self->_args;
+            delete $args{metadataPrefix};
+
+            my $sub = sub { $self->oai->ListMetadataFormats( %args ); };
+
+            my $res = $self->_retry( $sub );
+
+            while( my $mdf = $res->next ) {
+                $fill_stack->($mdf);
+            }
+
+            $done = 1;
+        }
+
+        if (my $rec = shift @$stack) {
+            return $self->_map_format($rec);
+        }
+
+        return undef;
+    };
+}
+
 sub oai_run {
     my ($self) = @_;
 
-    $self->listSets() ?
-        $self->_list_sets() :
-        $self->_list_records();
-
+    if ($self->listIdentifiers) {
+        return $self->_list_records;
+    }
+    elsif ($self->listSets) {
+        return $self->_list_sets
+    }
+    elsif ($self->getRecord) {
+        return $self->_get_record;
+    }
+    elsif ($self->listMetadataFormats) {
+        return $self->_list_metadata_formats;
+    }
+    else {
+        return $self->_list_records
+    }
 }
 
 sub generator {
     my ($self) = @_;
-
-    if( $self->listIdentifiers() && $self->listSets() ){
-
-        croak "options listIdentifiers and listSets cannot be set both";
-
-    }
 
     return $self->dry ? $self->dry_run : $self->oai_run;
 }
@@ -396,26 +495,23 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 =head1 SYNOPSIS
 
     # From the command line
-    $ catmandu convert OAI --url http://myrepo.org/oai
 
+    # Harvest records
+    $ catmandu convert OAI --url http://myrepo.org/oai
     $ catmandu convert OAI --url http://myrepo.org/oai --metadataPrefix didl --handler raw
 
-    # In perl
-    use Catmandu::Importer::OAI;
+    # Harvest identifiers
+    $ catmandu convert OAI --url http://myrepo.org/oai --listIdentifiers 1
 
-    my $importer = Catmandu::Importer::OAI->new(
-                    url => "...",
-                    metadataPrefix => "..." ,
-                    from => "..." ,
-                    until => "..." ,
-                    set => "...",
-                    handler => "..." );
+    # Harvest sets
+    $ catmandu convert OAI --url http://myrepo.org/oai --listSets 1
 
-    my $n = $importer->each(sub {
-        my $hashref = $_[0];
-        # ...
-    });
+    # Harvest metadataFormats
+    $ catmandu convert OAI --url http://myrepo.org/oai --listMetadataFormats 1
 
+    # Harvest one record
+    $ catmandu convert OAI --url http://myrepo.org/oai --getRecord 1 --identifier oai:myrepo:1234
+    
 =head1 CONFIGURATION
 
 =over
@@ -445,6 +541,10 @@ C<mods>, and L<Catmandu::Importer::OAI::Parser::struct> for other formats.
 In addition there is L<Catmandu::Importer::OAI::Parser::raw> to return the XML
 as it is.
 
+=item identifier
+
+Option return only results for this particular identifier
+
 =item set
 
 An optional set for selective harvesting.
@@ -459,6 +559,10 @@ for datestamp-based selective harvesting.
 An optional datetime value (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ) as upper bound
 for datestamp-based selective harvesting.
 
+=item getRecord
+
+Harvest one record instead of all records
+
 =item listIdentifiers
 
 Harvest identifiers instead of full records.
@@ -466,6 +570,10 @@ Harvest identifiers instead of full records.
 =item listSets
 
 Harvest sets instead of records
+
+=item listMetadataFormats
+
+Harvest metadata formats of records
 
 =item resumptionToken
 
