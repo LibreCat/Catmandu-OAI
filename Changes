@@ -1,6 +1,8 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+  - Adding support for Identify
+  - Fixing POD errors
 
 0.15  2017-04-05 15:50:08 CEST
   - Adding support for GetRecord and ListMetadataFormats
