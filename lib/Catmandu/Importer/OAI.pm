@@ -511,7 +511,12 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
     # Harvest one record
     $ catmandu convert OAI --url http://myrepo.org/oai --getRecord 1 --identifier oai:myrepo:1234
-    
+
+=head1 DESCRIPTION
+
+L<Catmandu::Importer::OAI> is an L<Catmandu> importer to harvest metadata records
+from an OAI-PMH endpoint.
+
 =head1 CONFIGURATION
 
 =over
@@ -626,6 +631,20 @@ repository which is secured with basic authentication.
 
 =back
 
+=head1 METHOD
+
+Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
+inherited. The Catmandu::Importer::OAI methods are not idempotent: OAI-PMH
+feeds can only be read once.
+
+In addition to methods inherited from L<Catmandu::Iterable>, this module
+provides the following public methods:
+
+=head2 handle_record( $dom )
+
+Process an XML DOM as with xslt and handler as configured and return the
+result.
+
 =head1 ENVIRONMENT
 
 If you are connected to the internet via a proxy server you need to set the
@@ -639,20 +658,31 @@ false in your environment. This maybe required to connect to broken SSL servers:
 
     export PERL_LWP_SSL_VERIFY_HOSTNAME=0
 
-=head1 DESCRIPTION
+=head1 SEE ALSO
 
-Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
-inherited. The Catmandu::Importer::OAI methods are not idempotent: OAI-PMH
-feeds can only be read once.
+L<Catmandu> ,
+L<Catmandu::Importer>
 
-=head1 METHOD
+=head1 AUTHOR
 
-In addition to methods inherited from L<Catmandu::Iterable>, this module
-provides the following public methods:
+Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
 
-=head2 handle_record( $dom )
+=head1 CONTRIBUTOR
 
-Process an XML DOM as with xslt and handler as configured and return the
-result.
+Patrick Hochstenbach, C<< <patrick.hochstenbach at ugent.be> >>
+
+Jakob Voss, C<< <nichtich at cpan.org> >>
+
+Nicolas Franck, C<< <nicolas.franck at ugent.be> >>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2016 Ghent University Library
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
 
 =cut
