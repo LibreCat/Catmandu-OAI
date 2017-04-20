@@ -3,6 +3,10 @@ Revision history for Catmandu-OAI
 {{$NEXT}}
   - Removing the required realm when authenticating #23
 
+0.16  2017-04-06 10:36:52 CEST
+  - Adding support for Identify
+  - Fixing POD errors
+
 0.15  2017-04-05 15:50:08 CEST
   - Adding support for GetRecord and ListMetadataFormats
   - Updated POD

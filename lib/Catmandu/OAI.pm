@@ -12,6 +12,9 @@ Catmandu::OAI - Catmandu modules for working with OAI repositories
   $ catmandu convert OAI --url http://biblio.ugent.be/oai --metadataPrefix mods --set books --handler raw
   $ catmandu import OAI --url http://biblio.ugent.be/oai --set allFtxt to MongoDB --database-name biblio
 
+  # Harvest repository description
+  $ catmandu convert OAI --url http://myrepo.org/oai --identify 1
+
   # Harvest identifiers
   $ catmandu convert OAI --url http://myrepo.org/oai --listIdentifiers 1
 
@@ -26,7 +29,7 @@ Catmandu::OAI - Catmandu modules for working with OAI repositories
 
 =cut
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 =head1 MODULES
 

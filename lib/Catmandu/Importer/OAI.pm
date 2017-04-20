@@ -9,7 +9,7 @@ use Carp;
 use Catmandu::Error;
 use URI;
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 with 'Catmandu::Importer';
 
@@ -21,7 +21,9 @@ has from                   => (is => 'ro');
 has until                  => (is => 'ro');
 has resumptionToken        => (is => 'ro');
 
+has identify               => (is => 'ro');
 has listIdentifiers        => (is => 'ro');
+has listRecords            => (is => 'ro');
 has listSets               => (is => 'ro');
 has listMetadataFormats    => (is => 'ro');
 has getRecord              => (is => 'ro');
@@ -160,6 +162,30 @@ sub _map_format {
     };
 }
 
+sub _map_identify {
+    my ($self, $rec) = @_;
+
+    my @description;
+
+    if ($rec->description) {
+      for my $desc ($rec->description) {
+         push @description , $desc->dom->toString;
+      }
+    }
+
+    +{
+        _id => $rec->baseURL,
+        baseURL            => $rec->baseURL,
+        granularity        => $rec->granularity,
+        deletedRecord      => $rec->deletedRecord,
+        earliestDatestamp  => $rec->earliestDatestamp,
+        adminEmail         => $rec->adminEmail,
+        protocolVersion    => $rec->protocolVersion,
+        repositoryName     => $rec->repositoryName,
+        description        => \@description
+    };
+}
+
 
 sub _map_record {
     my ($self, $rec) = @_;
@@ -226,7 +252,10 @@ sub _args {
 sub _verb {
     my $self = $_[0];
 
-    if ($self->listIdentifiers) {
+    if ($self->identify) {
+        return 'Identify';
+    }
+    elsif ($self->listIdentifiers) {
         return 'ListIdentifiers';
     }
     elsif ($self->listSets) {
@@ -237,6 +266,9 @@ sub _verb {
     }
     elsif ($self->listMetadataFormats) {
         return 'ListMetadataFormats';
+    }
+    elsif ($self->listRecords) {
+        return 'ListRecords';
     }
     else {
         return 'ListRecords';
@@ -458,10 +490,40 @@ sub _list_metadata_formats {
     };
 }
 
+sub _identify {
+    my $self = $_[0];
+    sub {
+        state $stack = [];
+        state $done  = 0;
+
+        my $fill_stack = sub {
+            push @$stack , shift;
+        };
+
+        if (@$stack <= 1 && $done == 0) {
+            my $sub  = sub { $self->oai->Identify( onRecord => $fill_stack) };
+            my $res  = $self->_retry( $sub );
+
+            $fill_stack->($res);
+
+            $done = 1;
+        }
+
+        if (my $rec = shift @$stack) {
+            return $self->_map_identify($rec);
+        }
+
+        return undef;
+    };
+}
+
 sub oai_run {
     my ($self) = @_;
 
-    if ($self->listIdentifiers) {
+    if ($self->identify) {
+        return $self->_identify;
+    }
+    elsif ($self->listIdentifiers) {
         return $self->_list_records;
     }
     elsif ($self->listSets) {
@@ -472,6 +534,9 @@ sub oai_run {
     }
     elsif ($self->listMetadataFormats) {
         return $self->_list_metadata_formats;
+    }
+    elsif ($self->listRecords) {
+        return $self->_list_records
     }
     else {
         return $self->_list_records
@@ -499,6 +564,9 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
     $ catmandu convert OAI --url http://myrepo.org/oai
     $ catmandu convert OAI --url http://myrepo.org/oai --metadataPrefix didl --handler raw
 
+    # Harvest repository description
+    $ catmandu convert OAI --url http://myrepo.org/oai --identify 1
+
     # Harvest identifiers
     $ catmandu convert OAI --url http://myrepo.org/oai --listIdentifiers 1
 
@@ -510,6 +578,11 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
     # Harvest one record
     $ catmandu convert OAI --url http://myrepo.org/oai --getRecord 1 --identifier oai:myrepo:1234
+
+=head1 DESCRIPTION
+
+L<Catmandu::Importer::OAI> is an L<Catmandu> importer to harvest metadata records
+from an OAI-PMH endpoint.
 
 =head1 CONFIGURATION
 
@@ -558,17 +631,25 @@ for datestamp-based selective harvesting.
 An optional datetime value (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ) as upper bound
 for datestamp-based selective harvesting.
 
+=item identify
+
+Harvest the repository description instead of all records.
+
 =item getRecord
 
-Harvest one record instead of all records
+Harvest one record instead of all records.
 
 =item listIdentifiers
 
 Harvest identifiers instead of full records.
 
+=item listRecords
+
+Harvest full records. Default operation.
+
 =item listSets
 
-Harvest sets instead of records
+Harvest sets instead of records.
 
 =item listMetadataFormats
 
@@ -625,6 +706,20 @@ repository which is secured with basic authentication.
 
 =back
 
+=head1 METHOD
+
+Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
+inherited. The Catmandu::Importer::OAI methods are not idempotent: OAI-PMH
+feeds can only be read once.
+
+In addition to methods inherited from L<Catmandu::Iterable>, this module
+provides the following public methods:
+
+=head2 handle_record( $dom )
+
+Process an XML DOM as with xslt and handler as configured and return the
+result.
+
 =head1 ENVIRONMENT
 
 If you are connected to the internet via a proxy server you need to set the
@@ -638,20 +733,31 @@ false in your environment. This maybe required to connect to broken SSL servers:
 
     export PERL_LWP_SSL_VERIFY_HOSTNAME=0
 
-=head1 DESCRIPTION
+=head1 SEE ALSO
 
-Every Catmandu::Importer is a L<Catmandu::Iterable> all its methods are
-inherited. The Catmandu::Importer::OAI methods are not idempotent: OAI-PMH
-feeds can only be read once.
+L<Catmandu> ,
+L<Catmandu::Importer>
 
-=head1 METHOD
+=head1 AUTHOR
 
-In addition to methods inherited from L<Catmandu::Iterable>, this module
-provides the following public methods:
+Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>
 
-=head2 handle_record( $dom )
+=head1 CONTRIBUTOR
 
-Process an XML DOM as with xslt and handler as configured and return the
-result.
+Patrick Hochstenbach, C<< <patrick.hochstenbach at ugent.be> >>
+
+Jakob Voss, C<< <nichtich at cpan.org> >>
+
+Nicolas Franck, C<< <nicolas.franck at ugent.be> >>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2016 Ghent University Library
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
 
 =cut
