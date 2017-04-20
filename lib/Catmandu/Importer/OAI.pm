@@ -87,7 +87,6 @@ sub _build_oai {
     my ($self) = @_;
     my $agent = HTTP::OAI::Harvester->new(baseURL => $self->url, resume => 0, keep_alive => 1);
     if( $self->has_username && $self->has_password ) {
-        carp "Probably you need a username,password and realm" unless $self->realm;
         my $uri = URI->new( $self->url );
         my @credentials = (
             $uri->host_port,
@@ -511,7 +510,7 @@ Catmandu::Importer::OAI - Package that imports OAI-PMH feeds
 
     # Harvest one record
     $ catmandu convert OAI --url http://myrepo.org/oai --getRecord 1 --identifier oai:myrepo:1234
-    
+
 =head1 CONFIGURATION
 
 =over

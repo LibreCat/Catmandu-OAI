@@ -1,6 +1,7 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+  - Removing the required realm when authenticating #23
 
 0.15  2017-04-05 15:50:08 CEST
   - Adding support for GetRecord and ListMetadataFormats
