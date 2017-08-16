@@ -381,14 +381,18 @@ sub _list_records {
 
         if (my $rec = shift @$stack) {
             if ($rec->isa('HTTP::OAI::Record')) {
-                return $self->_map_record($rec);
+                my $rec = $self->_map_record($rec);
+                $rec->{_resumptionToken} = $resumptionToken if defined($resumptionToken);
+                return $rec;
             }
             else {
-                return {
+                my $rec =  {
                     _id => $rec->identifier,
                     _datestamp  => $rec->datestamp,
                     _status => $rec->status // "",
-                }
+                };
+                $rec->{_resumptionToken} = $resumptionToken if defined($resumptionToken);
+                return $rec;
             }
         }
 
