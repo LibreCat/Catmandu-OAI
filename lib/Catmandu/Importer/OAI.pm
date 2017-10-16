@@ -186,7 +186,6 @@ sub _map_identify {
     };
 }
 
-
 sub _map_record {
     my ($self, $rec) = @_;
 
@@ -216,7 +215,7 @@ sub _map_record {
     $data;
 }
 
-sub _args_for_records {
+sub _args {
     my $self = $_[0];
 
     my %args = (
@@ -232,21 +231,6 @@ sub _args_for_records {
     }
 
     return %args;
-}
-
-sub _args {
-    my $self = $_[0];
-
-    my %args;
-
-    if( $self->listSets() ){
-
-    }
-    else{
-        %args = $self->_args_for_records();
-    }
-
-    %args;
 }
 
 sub _verb {
@@ -328,7 +312,7 @@ sub _retry {
                 $self->_retried( $_retried );
                 next;
             }
-            else{
+            else {
                 my $err_msg = $self->url . " : " . $res->message." (stopped after ".$self->_retried()." retries)";
                 $self->log->error( $err_msg );
                 Catmandu::Error->throw( $err_msg );
@@ -343,6 +327,7 @@ sub _retry {
 
 sub _list_records {
     my $self = $_[0];
+    my $args = $_[1];
     sub {
         state $stack = [];
         state $resumptionToken = $self->resumptionToken;
@@ -353,7 +338,7 @@ sub _list_records {
         };
 
         if (@$stack <= 1 && $done == 0) {
-            my %args = $self->_args;
+            my %args = $args ? %$args : $self->_args;
 
             # Use the resumptionToken if one found on the last run, or if it was
             # undefined (last record)
@@ -411,8 +396,6 @@ sub _list_sets {
         };
 
         if (@$stack <= 1 && $done == 0) {
-            my %args = $self->_args;
-
             my $sub = sub { $self->oai->ListSets( onRecord => $fill_stack ); };
 
             my $res = $self->_retry( $sub );
@@ -429,6 +412,7 @@ sub _list_sets {
 
 sub _get_record {
     my $self = $_[0];
+    my $args = $_[1];
     sub {
         state $stack = [];
         state $done  = 0;
@@ -438,7 +422,7 @@ sub _get_record {
         };
 
         if (@$stack <= 1 && $done == 0) {
-            my %args = $self->_args;
+            my %args = $args ? %$args : $self->_args;
             my $sub  = sub { $self->oai->GetRecord(%args , onRecord => $fill_stack) };
             my $res  = $self->_retry( $sub );
             $done = 1;
@@ -463,6 +447,7 @@ sub _get_record {
 
 sub _list_metadata_formats {
     my $self = $_[0];
+    my $args = $_[1];
     sub {
         state $stack = [];
         state $done  = 0;
@@ -472,7 +457,7 @@ sub _list_metadata_formats {
         };
 
         if (@$stack <= 1 && $done == 0) {
-            my %args = $self->_args;
+            my %args = $args ? %$args : $self->_args;
             delete $args{metadataPrefix};
 
             my $sub = sub { $self->oai->ListMetadataFormats( %args ); };
