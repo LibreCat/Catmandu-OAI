@@ -331,6 +331,7 @@ sub _list_records {
     sub {
         state $stack = [];
         state $resumptionToken = $self->resumptionToken;
+        state $resumptionData  = {};
         state $done  = 0;
 
         my $fill_stack = sub {
@@ -354,6 +355,11 @@ sub _list_records {
             my $res = $self->_retry( $sub );
             if (defined $res->resumptionToken) {
                 $resumptionToken = $res->resumptionToken->resumptionToken;
+
+                $resumptionData->{token}            = $resumptionToken;
+                $resumptionData->{expirationDate}   = $res->resumptionToken->expirationDate;
+                $resumptionData->{completeListSize} = $res->resumptionToken->completeListSize;
+                $resumptionData->{cursor}           = $res->resumptionToken->cursor;
             }
             else {
                 $resumptionToken = undef;
@@ -367,7 +373,10 @@ sub _list_records {
         if (my $rec = shift @$stack) {
             if ($rec->isa('HTTP::OAI::Record')) {
                 my $rec = $self->_map_record($rec);
+
                 $rec->{_resumptionToken} = $resumptionToken if defined($resumptionToken);
+                $rec->{_resumption} = $resumptionData if defined($resumptionData);
+
                 return $rec;
             }
             else {
@@ -376,7 +385,10 @@ sub _list_records {
                     _datestamp  => $rec->datestamp,
                     _status => $rec->status // "",
                 };
+
                 $rec->{_resumptionToken} = $resumptionToken if defined($resumptionToken);
+                $rec->{_resumption} = $resumptionData if defined($resumptionData);
+
                 return $rec;
             }
         }

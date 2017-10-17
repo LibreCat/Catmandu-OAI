@@ -44,7 +44,10 @@ Catmandu::Store::OAI - A Catmandu store backed by OAI-PMH
     $ catmandu export OAI --url http://somewhere.org/oai to JSON > data.json
 
     # Export only one record
-    $ catmandu export OAI --url http://somewhere.org/oai  --id 1234
+    $ catmandu export OAI --url http://somewhere.org/oai --id 1234
+
+    # Export from a set
+    $ catmandu export OAI --url http://somewhere.org/oai --bag fulltext
 
     # From Perl
 

@@ -24,7 +24,29 @@ sub generator {
 
 sub count {
     my ($self)    = @_;
-    confess "Not implemented";
+
+    my $oai = $self->store->oai;
+    my $set = $self->name eq 'data' ? undef : $self->name;
+
+    my $it = $oai->_list_records({
+        set => $set,
+        metadataPrefix => $oai->metadataPrefix
+    });
+
+    my $rec = $it->();
+
+    return 0 unless $rec;
+
+    if ($rec && $rec->{_resumption} && (my $size = $rec->{_resumption}->{completeListSize})) {
+        return $size;
+    }
+    else {
+        my $n = 1;
+        while ($it->()) {
+            $n++;
+        }
+        return $n;
+    }
 }
 
 sub get {
@@ -54,17 +76,17 @@ sub get {
 
 sub add {
     my ($self, $data) = @_;
-    confess "OAI is a read-only store";
+    Catmandu::NotImplemented->throw("OAI is a read-only store");
 }
 
 sub delete {
     my ($self, $id) = @_;
-    confess "OAI is a read-only store";
+    Catmandu::NotImplemented->throw("OAI is a read-only store");
 }
 
 sub delete_all {
     my ($self)    = @_;
-    confess "OAI is a read-only store";
+    Catmandu::NotImplemented->throw("OAI is a read-only store");
 }
 
 sub commit {
