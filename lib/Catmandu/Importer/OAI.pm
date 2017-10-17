@@ -296,7 +296,7 @@ sub _retry {
 
         $res = $sub->();
 
-        if ($res->is_error) {
+        if ($res->is_error && ref($res) eq 'HTTP::Response') {
 
             my $max_retries = $self->max_retries();
             my $_retried = $self->_retried();

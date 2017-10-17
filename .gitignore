@@ -5,3 +5,4 @@ LICENSE
 local
 cpanfile.snapshot
 .perl-version
+catmandu.yml
