@@ -37,6 +37,8 @@ our $VERSION = '0.17';
 
 =item * L<Catmandu::Importer::OAI>
 
+=item * L<Catmandu::Store::OAI>
+
 =back
 
 =head1 AUTHOR

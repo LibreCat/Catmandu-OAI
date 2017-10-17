@@ -296,7 +296,7 @@ sub _retry {
 
         $res = $sub->();
 
-        if ($res->is_error && ref($res) eq 'HTTP::Response') {
+        if ($res->is_error && ref($res) ne 'HTTP::OAI::Response') {
 
             my $max_retries = $self->max_retries();
             my $_retried = $self->_retried();

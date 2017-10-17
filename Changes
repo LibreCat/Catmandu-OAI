@@ -1,6 +1,8 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+  - Adding a Catmandu::Store implementation of OAI-PMH
+  - Retry options should ignore OAI errors
 
 0.17  2017-04-20 13:36:59 CEST
   - Removing the required realm when authenticating #23
