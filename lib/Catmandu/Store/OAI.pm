@@ -2,7 +2,7 @@ package Catmandu::Store::OAI;
 
 use Catmandu::Sane;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 use Moo;
 use Catmandu::Util qw(:is);

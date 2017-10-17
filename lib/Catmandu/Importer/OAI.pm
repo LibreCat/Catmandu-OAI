@@ -9,7 +9,7 @@ use Carp;
 use Catmandu::Error;
 use URI;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 with 'Catmandu::Importer';
 
