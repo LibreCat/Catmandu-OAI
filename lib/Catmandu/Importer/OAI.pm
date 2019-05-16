@@ -38,6 +38,7 @@ has _xml_handlers          => ( is => 'ro', default => sub { +{} } );
 has realm                  => ( is => 'ro', predicate => 1 );
 has username               => ( is => 'ro', predicate => 1 );
 has password               => ( is => 'ro', predicate => 1 );
+has force                  => ( is => 'ro', default => sub { 0 } );
 
 sub _build_handler {
     my ($self) = @_;
@@ -224,6 +225,7 @@ sub _args {
         set            => $self->set ,
         from           => $self->from ,
         until          => $self->until ,
+        force          => $self->force,
     );
 
     for( keys %args ) {
