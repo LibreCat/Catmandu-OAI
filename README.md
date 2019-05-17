@@ -28,6 +28,7 @@ Catmandu::OAI - Catmandu modules for working with OAI repositories
 # MODULES
 
 - [Catmandu::Importer::OAI](https://metacpan.org/pod/Catmandu::Importer::OAI)
+- [Catmandu::Store::OAI](https://metacpan.org/pod/Catmandu::Store::OAI)
 
 # AUTHOR
 

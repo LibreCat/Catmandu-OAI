@@ -4,7 +4,11 @@
       "Nicolas Steenlant, C<< <nicolas.steenlant at ugent.be> >>"
    ],
    "dynamic_config" : 0,
+<<<<<<< HEAD
    "generated_by" : "Dist::Zilla version 6.005, Dist::Milla version v1.0.16, CPAN::Meta::Converter version 2.150005",
+=======
+   "generated_by" : "Dist::Milla version v1.0.17, Dist::Zilla version 6.008, CPAN::Meta::Converter version 2.150005",
+>>>>>>> 6e2f48d6498b4905987dfc676e45692599ea7adc
    "license" : [
       "perl_5"
    ],
@@ -43,7 +47,11 @@
       },
       "develop" : {
          "requires" : {
+<<<<<<< HEAD
             "Dist::Milla" : "v1.0.16",
+=======
+            "Dist::Milla" : "v1.0.17",
+>>>>>>> 6e2f48d6498b4905987dfc676e45692599ea7adc
             "Test::Pod" : "1.41"
          }
       },
@@ -81,17 +89,17 @@
          "web" : "https://github.com/LibreCat/Catmandu-OAI"
       }
    },
-   "version" : "0.16",
+   "version" : "0.18",
    "x_contributors" : [
       "Christian Pietsch <christian.pietsch@uni-bielefeld.de>",
       "Jakob Voss <voss@gbv.de>",
       "Matthias Vandermaesen <matthias@colada.be>",
-      "Nicolas Franck <nicolas.franck@ugent.be>",
+      "Nicolas Franck <Nicolas.Franck@ugent.be>",
       "Nicolas Franck <njfranck@ca20c533.ugent.be>",
       "Nicolas Steenlant <nicolas.steenlant@ugent.be>",
       "Patrick Hochstenbach <Patrick.Hochstenbach@UGent.be>",
-      "Patrick Hochstenbach <patrick.hochstenbach@ugent.be>",
       "Yanick Champoux <yanick@babyl.dyndns.org>"
-   ]
+   ],
+   "x_serialization_backend" : "Cpanel::JSON::XS version 3.023"
 }
 
