@@ -21,6 +21,8 @@ has from                   => (is => 'ro');
 has until                  => (is => 'ro');
 has resumptionToken        => (is => 'ro');
 
+has strict                 => (is => 'ro');
+
 has identify               => (is => 'ro');
 has listIdentifiers        => (is => 'ro');
 has listRecords            => (is => 'ro');
@@ -226,6 +228,7 @@ sub _args_for_records {
         set            => $self->set ,
         from           => $self->from ,
         until          => $self->until ,
+        force          => !$self->strict ,
     );
 
     for( keys %args ) {
@@ -663,6 +666,11 @@ An optional resumptionToken to start harvesting from.
 =item dry
 
 Don't do any HTTP requests but return URLs that data would be queried from.
+
+=item strict
+
+Optional validate all parameters first against the OAI 2 spefications before
+sending it to an OAI server. Default: undef.
 
 =item xslt
 

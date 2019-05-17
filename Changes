@@ -1,6 +1,7 @@
 Revision history for Catmandu-OAI
 
 {{$NEXT}}
+  - Adding a strict option for the importer
 
 0.16  2017-04-06 10:36:52 CEST
   - Adding support for Identify
