@@ -17,4 +17,4 @@ script:
 after_success:
   - cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Coveralls
   - cover -report coveralls
-env: RELEASE_TESTING=1 AUTOMATED_TESTING=1
+env: AUTOMATED_TESTING=1
