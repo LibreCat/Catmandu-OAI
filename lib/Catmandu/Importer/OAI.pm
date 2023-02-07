@@ -669,7 +669,7 @@ Don't do any HTTP requests but return URLs that data would be queried from.
 
 =item strict
 
-Optional validate all parameters first against the OAI 2 spefications before
+Optional validate all parameters first against the OAI 2 specifications before
 sending it to an OAI server. Default: undef.
 
 =item xslt
@@ -685,7 +685,7 @@ Set to '0' by default.
 Internally the exponential backoff algorithm is used
 for this. This means that after every failed request the importer
 will choose a random number between 0 and 2^collision (excluded),
-and wait that number of seconds. So the actual ammount of time before
+and wait that number of seconds. So the actual amount of time before
 the importer stops can differ:
 
  first retry:
